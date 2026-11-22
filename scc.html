@@ -34,7 +34,7 @@
 
   <!-- Top Header -->
   <header class="bg-slate-900 text-white sticky top-0 z-30 shadow-md">
-    <div class="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between gap-3">
+    <div class="max-w-5xl mx-auto px-4 py-2.5 sm:py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-3">
       <div class="flex items-center gap-2.5 min-w-0">
         <div class="w-9 h-9 rounded-xl bg-sky-500/20 border border-sky-400/30 flex items-center justify-center shrink-0">
           <i data-lucide="car" class="w-5 h-5 text-sky-400"></i>
@@ -48,7 +48,7 @@
         </div>
       </div>
 
-      <div class="flex items-center gap-1.5 sm:gap-2 shrink-0">
+      <div class="flex items-center justify-end gap-1.5 sm:gap-2 shrink-0 flex-wrap">
         <button id="btnLangToggle" class="inline-flex items-center gap-1 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 text-[11px] font-bold px-2 py-2 rounded-lg transition" title="한국어 / English 전환">
           <i data-lucide="languages" class="w-3.5 h-3.5 text-sky-400"></i>
           <span id="langToggleLabel">EN</span>
@@ -364,6 +364,7 @@
             <span class="text-slate-400">릴리스 2026.11.22</span>
           </div>
           <ul class="list-disc list-inside space-y-1 text-slate-500 pt-1">
+            <li>모바일 상단 헤더 2줄 배치로 앱 제목 가독성 개선 (v1.5.1)</li>
             <li>Google 로그인 세션 유지 · 자동 연장 및 원클릭 재연결 지원 (v1.5.0)</li>
             <li>기본 Google OAuth 클라이언트 ID 내장 적용 (v1.4.1)</li>
             <li>한국어 / 영어(Smart Car Care) 다국어 전환 지원 (v1.4.0)</li>
@@ -650,7 +651,7 @@
     (function () {
       'use strict';
 
-      const APP_VERSION = 'v1.5.0';
+      const APP_VERSION = 'v1.5.1';
       const DEFAULT_GDRIVE_CLIENT_ID = '126554316010-1v3tt4ff6pjchimdlfschr7rs6or48tg.apps.googleusercontent.com';
       const LANG_STORAGE_KEY = 'smart_car_logbook_lang';
       let currentLang = loadLang();

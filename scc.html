@@ -34,33 +34,27 @@
 
   <!-- Top Header -->
   <header class="bg-slate-900 text-white sticky top-0 z-30 shadow-md">
-    <div class="max-w-5xl mx-auto px-4 py-2.5 sm:py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-3">
+    <div class="max-w-5xl mx-auto px-4 py-2.5 sm:py-3 flex items-center justify-between gap-2 sm:gap-3">
       <div class="flex items-center gap-2.5 min-w-0">
         <div class="w-9 h-9 rounded-xl bg-sky-500/20 border border-sky-400/30 flex items-center justify-center shrink-0">
           <i data-lucide="car" class="w-5 h-5 text-sky-400"></i>
         </div>
         <div class="min-w-0">
-          <div class="flex items-center gap-1.5">
-            <h1 id="appTitleText" class="text-base font-bold tracking-tight truncate">스마트 차계부</h1>
-            <button id="btnVersionBadge" data-goto="backup" class="text-[10px] font-semibold px-1.5 py-0.5 rounded-md bg-sky-500/20 text-sky-300 border border-sky-400/30 hover:bg-sky-500/30 transition shrink-0" title="앱 버전 정보 보기">v1.0.0</button>
+          <h1 id="appTitleText" class="text-base font-bold tracking-tight truncate">스마트 차계부</h1>
+          <div class="flex items-center gap-1.5 text-[11px] truncate">
+            <button id="btnVersionBadge" data-goto="backup" class="font-semibold text-sky-300 hover:text-sky-200 transition shrink-0" title="앱 버전 정보 보기">v1.7.3</button>
+            <span class="text-slate-400 truncate" id="headerSubtitle"></span>
           </div>
-          <p class="text-[11px] text-slate-400 truncate" id="headerSubtitle">차량별 주유 · 연비 · 정비 관리</p>
         </div>
       </div>
 
-      <div class="flex items-center justify-end gap-1.5 sm:gap-2 shrink-0 flex-wrap">
+      <div class="flex items-center justify-end gap-1.5 sm:gap-2 shrink-0">
         <button id="btnLangToggle" class="inline-flex items-center gap-1 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 text-[11px] font-bold px-2 py-2 rounded-lg transition" title="한국어 / English 전환">
           <i data-lucide="languages" class="w-3.5 h-3.5 text-sky-400"></i>
           <span id="langToggleLabel">EN</span>
         </button>
-        <button id="btnSyncHeader" class="inline-flex items-center gap-1.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 text-xs px-2.5 py-2 rounded-lg transition" title="Google Drive 동기화 상태">
-          <span id="headerSyncIconWrap" class="inline-flex items-center"><i id="headerSyncIcon" data-lucide="cloud-off" class="w-3.5 h-3.5 text-slate-400"></i></span>
-          <span id="headerSyncText" class="hidden md:inline font-medium">동기화</span>
-        </button>
-        <button id="btnOpenAccountModal" class="inline-flex items-center gap-1.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-100 text-xs px-2.5 py-2 rounded-lg transition" title="사용자 계정 전환 및 관리">
-          <span id="headerAccountDot" class="w-4 h-4 rounded-full bg-sky-500 text-slate-950 font-bold text-[10px] flex items-center justify-center shrink-0">기</span>
-          <span id="headerAccountName" class="max-w-[72px] sm:max-w-[110px] truncate font-medium">기본 계정</span>
-          <i data-lucide="chevron-down" class="w-3.5 h-3.5 text-slate-400"></i>
+        <button id="btnSyncHeader" class="inline-flex items-center justify-center bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-100 p-2 rounded-lg transition" title="Google 로그인 및 Drive 동기화" aria-label="Google 로그인">
+          <span id="headerSyncIconWrap" class="inline-flex items-center justify-center"><i id="headerSyncIcon" data-lucide="log-in" class="w-4 h-4 text-sky-400"></i></span>
         </button>
         <button id="btnOpenFuelModalTop" class="hidden sm:inline-flex items-center gap-1.5 bg-sky-500 hover:bg-sky-400 text-slate-950 font-semibold text-xs px-3 py-2 rounded-lg transition">
           <i data-lucide="fuel" class="w-3.5 h-3.5"></i> <span data-i18n="addFuelBtn">주유 입력</span>
@@ -366,6 +360,7 @@
           <ul class="list-disc list-inside space-y-1 text-slate-500 pt-1">
             <li>웹앱 제목을 스마트 차계부(Smart Car Care)로 변경 (v1.6.2)</li>
             <li>재로그인 및 다른 기기 로그인 시 권한 동의 창 생략 개선 (v1.6.1)</li>
+            <li>로컬 사용자 계정 제거 및 상단 Google 로그인 통합 (v1.7.0)</li>
             <li>초기 실행 시 빈 차고로 시작 · 로그인 시 Drive 데이터 자동 불러오기 (v1.6.0)</li>
             <li>모바일 상단 헤더 2줄 배치로 앱 제목 가독성 개선 (v1.5.1)</li>
             <li>Google 로그인 세션 유지 · 자동 연장 및 원클릭 재연결 지원 (v1.5.0)</li>
@@ -566,46 +561,6 @@
     </div>
   </div>
 
-  <!-- Modal: Account Manager -->
-  <div id="accountModal" class="hidden fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4">
-    <div class="bg-white w-full sm:max-w-md rounded-t-2xl sm:rounded-2xl shadow-xl overflow-hidden animate-fade-in">
-      <div class="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
-        <div>
-          <h3 class="text-base font-bold text-slate-900">사용자 계정 전환 · 관리</h3>
-          <p class="text-[11px] text-slate-500 mt-0.5">계정마다 차량 목록, 주유·정비 기록, 설정이 독립적으로 저장됩니다.</p>
-        </div>
-        <button data-close-modal="accountModal" class="text-slate-400 hover:text-slate-700 p-1"><i data-lucide="x" class="w-5 h-5"></i></button>
-      </div>
-      <div class="p-5 space-y-4 max-h-[80vh] overflow-y-auto">
-        <div id="accountList" class="space-y-2.5"></div>
-
-        <form id="accountForm" class="pt-4 border-t border-slate-200 space-y-3">
-          <h4 class="text-xs font-bold text-slate-500 uppercase tracking-wider" id="accountFormTitle">새 사용자 계정 추가</h4>
-          <input type="hidden" id="accountEditId" />
-          <div>
-            <label class="block text-xs font-semibold text-slate-600 mb-1">계정 이름</label>
-            <input type="text" id="accName" required placeholder="예: 홍길동 / 배우자 / 회사차용" class="w-full border border-slate-300 rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-sky-500" />
-          </div>
-          <div id="accPresetWrapper">
-            <label class="block text-xs font-semibold text-slate-600 mb-1">초기 차량 구성</label>
-            <select id="accPreset" class="w-full border border-slate-300 rounded-xl px-3 py-2 text-sm bg-white outline-none focus:ring-2 focus:ring-sky-500">
-              <option value="empty">새 차량 1대로 시작 (직접 입력)</option>
-              <option value="bmw_audi">BMW 5GT · 아우디 A3 기본 구성 포함</option>
-            </select>
-          </div>
-          <div id="accFirstCarWrapper">
-            <label class="block text-xs font-semibold text-slate-600 mb-1">첫 번째 차량명</label>
-            <input type="text" id="accFirstCarName" placeholder="예: 2022 현대 아반떼" class="w-full border border-slate-300 rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-sky-500" />
-          </div>
-          <div class="flex gap-2">
-            <button type="button" id="btnCancelAccountEdit" class="hidden px-4 py-2 rounded-xl border border-slate-200 text-xs font-semibold text-slate-600">취소</button>
-            <button type="submit" class="flex-1 py-2.5 rounded-xl bg-sky-600 hover:bg-sky-700 text-white text-sm font-semibold">계정 저장</button>
-          </div>
-        </form>
-      </div>
-    </div>
-  </div>
-
   <!-- Modal: Sync Conflict -->
   <div id="syncConflictModal" class="hidden fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4">
     <div class="bg-white w-full max-w-md rounded-2xl shadow-xl p-5 space-y-4 animate-fade-in">
@@ -654,7 +609,7 @@
     (function () {
       'use strict';
 
-      const APP_VERSION = 'v1.6.2';
+      const APP_VERSION = 'v1.7.3';
       const DEFAULT_GDRIVE_CLIENT_ID = '126554316010-1v3tt4ff6pjchimdlfschr7rs6or48tg.apps.googleusercontent.com';
       const LANG_STORAGE_KEY = 'smart_car_logbook_lang';
       let currentLang = loadLang();
@@ -781,7 +736,8 @@
         });
       }
       const LEGACY_STORAGE_KEY = 'smart_car_logbook_v1';
-      const STORAGE_KEY = 'smart_car_logbook_v2';
+      const V2_STORAGE_KEY = 'smart_car_logbook_v2';
+      const STORAGE_KEY = 'smart_car_logbook_v3';
       const GDRIVE_CLIENT_ID_KEY = 'smart_car_logbook_gdrive_client_id';
       const GDRIVE_FOLDER_PATH_KEY = 'smart_car_logbook_gdrive_folder';
       const GDRIVE_SESSION_KEY = 'smart_car_logbook_gdrive_session';
@@ -832,17 +788,23 @@
         maintLogs: []
       };
 
-      let rootState = loadRootState();
-      let state = getActiveAccount().data;
+      let state = loadState();
       let efficiencyChartInstance = null;
       let expenseChartInstance = null;
       let confirmCallback = null;
 
-      function sanitizeAccountData(parsed) {
-        if (!parsed || !Array.isArray(parsed.vehicles)) {
+      function sanitizeStateData(parsed) {
+        if (!parsed) return JSON.parse(JSON.stringify(DEFAULT_STATE));
+        // Support migrating v2 multi-account format (from localStorage or Drive backup)
+        if (Array.isArray(parsed.accounts) && parsed.accounts.length) {
+          const activeAcc = parsed.accounts.find(a => a.id === parsed.activeAccountId) || parsed.accounts[0];
+          return sanitizeStateData(activeAcc && activeAcc.data ? activeAcc.data : null);
+        }
+        if (!Array.isArray(parsed.vehicles)) {
           return JSON.parse(JSON.stringify(DEFAULT_STATE));
         }
         return {
+          updatedAt: parsed.updatedAt || null,
           activeVehicleId: parsed.vehicles.length ? (parsed.activeVehicleId || parsed.vehicles[0].id) : null,
           activeTab: parsed.activeTab || 'dashboard',
           vehicles: parsed.vehicles,
@@ -851,58 +813,18 @@
         };
       }
 
-      function createDefaultRoot() {
-        return {
-          activeAccountId: 'acc_default',
-          accounts: [
-            {
-              id: 'acc_default',
-              name: '기본 계정',
-              color: '#0ea5e9',
-              data: JSON.parse(JSON.stringify(DEFAULT_STATE))
-            }
-          ]
-        };
-      }
-
-      function loadRootState() {
+      function loadState() {
         try {
           const raw = localStorage.getItem(STORAGE_KEY);
-          if (raw) {
-            const parsed = JSON.parse(raw);
-            if (parsed && Array.isArray(parsed.accounts) && parsed.accounts.length) {
-              parsed.accounts = parsed.accounts.map(acc => ({
-                id: acc.id || uid(),
-                name: acc.name || '사용자',
-                color: acc.color || '#0ea5e9',
-                data: sanitizeAccountData(acc.data)
-              }));
-              if (!parsed.accounts.some(a => a.id === parsed.activeAccountId)) {
-                parsed.activeAccountId = parsed.accounts[0].id;
-              }
-              return parsed;
-            }
-          }
-          // Migrate legacy v1 state if present
-          const legacyRaw = localStorage.getItem(LEGACY_STORAGE_KEY);
-          if (legacyRaw) {
-            const legacyParsed = JSON.parse(legacyRaw);
-            const root = createDefaultRoot();
-            root.accounts[0].data = sanitizeAccountData(legacyParsed);
-            return root;
-          }
-          return createDefaultRoot();
+          if (raw) return sanitizeStateData(JSON.parse(raw));
+          const v2Raw = localStorage.getItem(V2_STORAGE_KEY);
+          if (v2Raw) return sanitizeStateData(JSON.parse(v2Raw));
+          const v1Raw = localStorage.getItem(LEGACY_STORAGE_KEY);
+          if (v1Raw) return sanitizeStateData(JSON.parse(v1Raw));
+          return JSON.parse(JSON.stringify(DEFAULT_STATE));
         } catch (e) {
-          return createDefaultRoot();
+          return JSON.parse(JSON.stringify(DEFAULT_STATE));
         }
-      }
-
-      function getActiveAccount() {
-        return rootState.accounts.find(a => a.id === rootState.activeAccountId) || rootState.accounts[0];
-      }
-
-      function syncActiveStateRef() {
-        state = getActiveAccount().data;
       }
 
       let gdriveState = {
@@ -1012,9 +934,9 @@
       }
 
       function saveState(skipCloudSync) {
-        rootState.updatedAt = new Date().toISOString();
+        state.updatedAt = new Date().toISOString();
         try {
-          localStorage.setItem(STORAGE_KEY, JSON.stringify(rootState));
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
         } catch (e) {
           // Storage unavailable in restricted mode; keep in-memory
         }
@@ -1032,8 +954,9 @@
         const loginBox = document.getElementById('driveLoginBox');
         const emailEl = document.getElementById('driveUserEmail');
         const lastEl = document.getElementById('driveLastSyncText');
-        const hdrText = document.getElementById('headerSyncText');
+        const hdrBtn = document.getElementById('btnSyncHeader');
         const hdrIconWrap = document.getElementById('headerSyncIconWrap');
+        const googleG = `<svg id="headerSyncIcon" class="w-4 h-4" viewBox="0 0 24 24" aria-hidden="true"><path fill="#4285F4" d="M23.5 12.3c0-.8-.1-1.6-.2-2.3H12v4.5h6.5c-.3 1.5-1.1 2.8-2.4 3.6v3h3.9c2.3-2.1 3.5-5.2 3.5-8.8z"/><path fill="#34A853" d="M12 24c3.2 0 6-1.1 8-2.9l-3.9-3c-1.1.7-2.5 1.2-4.1 1.2-3.2 0-5.9-2.1-6.8-5H1.2v3.1C3.2 21.4 7.3 24 12 24z"/><path fill="#FBBC05" d="M5.2 14.3c-.2-.7-.4-1.5-.4-2.3s.1-1.6.4-2.3V6.6H1.2C.4 8.2 0 10.1 0 12s.4 3.8 1.2 5.4l4-3.1z"/><path fill="#EA4335" d="M12 4.8c1.8 0 3.4.6 4.6 1.8l3.5-3.5C18 1.1 15.2 0 12 0 7.3 0 3.2 2.6 1.2 6.6l4 3.1c.9-2.9 3.6-4.9 6.8-4.9z"/></svg>`;
 
         if (gdriveState.accessToken) {
           if (userBox) userBox.classList.remove('hidden');
@@ -1045,11 +968,11 @@
             badge.className = 'text-[11px] font-semibold px-2.5 py-1 rounded-full ' +
               (isError ? 'bg-rose-100 text-rose-700' : 'bg-emerald-100 text-emerald-700');
           }
-          if (hdrText) hdrText.textContent = gdriveState.syncing ? '동기화 중' : 'Drive 연결됨';
+          if (hdrBtn) hdrBtn.title = (gdriveState.userEmail || 'Google Drive') + (gdriveState.syncing ? ' · 동기화 중' : ' · 동기화됨');
           if (hdrIconWrap) {
-            const iconName = gdriveState.syncing ? 'refresh-cw' : (isError ? 'alert-circle' : 'cloud');
+            const iconName = gdriveState.syncing ? 'refresh-cw' : (isError ? 'alert-circle' : 'cloud-check');
             const iconCls = gdriveState.syncing ? 'text-sky-400 animate-spin' : (isError ? 'text-rose-400' : 'text-emerald-400');
-            hdrIconWrap.innerHTML = `<i data-lucide="${iconName}" class="w-3.5 h-3.5 ${iconCls}"></i>`;
+            hdrIconWrap.innerHTML = `<i id="headerSyncIcon" data-lucide="${iconName}" class="w-4 h-4 ${iconCls}"></i>`;
           }
         } else if (gdriveState.wasLoggedIn) {
           if (userBox) userBox.classList.add('hidden');
@@ -1058,9 +981,9 @@
             badge.textContent = currentLang === 'en' ? 'Reconnect Needed' : '세션 만료 (재연결)';
             badge.className = 'text-[11px] font-semibold px-2.5 py-1 rounded-full bg-amber-100 text-amber-800';
           }
-          if (hdrText) hdrText.textContent = currentLang === 'en' ? 'Reconnect' : '재연결';
+          if (hdrBtn) hdrBtn.title = currentLang === 'en' ? 'Reconnect Google Drive' : 'Google Drive 재연결';
           if (hdrIconWrap) {
-            hdrIconWrap.innerHTML = '<i id="headerSyncIcon" data-lucide="refresh-cw" class="w-3.5 h-3.5 text-amber-400"></i>';
+            hdrIconWrap.innerHTML = '<i id="headerSyncIcon" data-lucide="refresh-cw" class="w-4 h-4 text-amber-400"></i>';
           }
         } else {
           if (userBox) userBox.classList.add('hidden');
@@ -1069,9 +992,9 @@
             badge.textContent = currentLang === 'en' ? 'Disconnected' : '미연결';
             badge.className = 'text-[11px] font-semibold px-2.5 py-1 rounded-full bg-slate-100 text-slate-600';
           }
-          if (hdrText) hdrText.textContent = t('syncIdle');
+          if (hdrBtn) hdrBtn.title = currentLang === 'en' ? 'Sign in with Google' : 'Google 로그인';
           if (hdrIconWrap) {
-            hdrIconWrap.innerHTML = '<i id="headerSyncIcon" data-lucide="cloud-off" class="w-3.5 h-3.5 text-slate-400"></i>';
+            hdrIconWrap.innerHTML = googleG;
           }
         }
         if (window.lucide) lucide.createIcons();
@@ -1204,7 +1127,7 @@
         gdriveState.syncing = true;
         updateSyncUI('Google Drive에 저장 중...');
         try {
-          const payload = JSON.stringify(rootState);
+          const payload = JSON.stringify(state);
           if (!gdriveState.driveFileId) {
             const existing = await findDriveSyncFile(gdriveState.accessToken);
             if (existing) gdriveState.driveFileId = existing.id;
@@ -1275,30 +1198,16 @@
         }
       }
 
-      function countTotalRecords(rs) {
-        if (!rs || !Array.isArray(rs.accounts)) return 0;
-        return rs.accounts.reduce((sum, a) => {
-          const d = a.data || {};
-          return sum +
-            (Array.isArray(d.vehicles) ? d.vehicles.length : 0) +
-            (Array.isArray(d.fuelLogs) ? d.fuelLogs.length : 0) +
-            (Array.isArray(d.maintLogs) ? d.maintLogs.length : 0);
-        }, 0);
+      function countTotalRecords(dataObj) {
+        const d = sanitizeStateData(dataObj);
+        return (d.vehicles ? d.vehicles.length : 0) +
+          (d.fuelLogs ? d.fuelLogs.length : 0) +
+          (d.maintLogs ? d.maintLogs.length : 0);
       }
 
       function applyRemoteRootState(remote) {
-        if (!remote || !Array.isArray(remote.accounts) || !remote.accounts.length) return;
-        remote.accounts = remote.accounts.map(acc => ({
-          id: acc.id || uid(),
-          name: acc.name || '사용자',
-          color: acc.color || '#0ea5e9',
-          data: sanitizeAccountData(acc.data)
-        }));
-        if (!remote.accounts.some(a => a.id === remote.activeAccountId)) {
-          remote.activeAccountId = remote.accounts[0].id;
-        }
-        rootState = remote;
-        syncActiveStateRef();
+        const clean = sanitizeStateData(remote);
+        state = clean;
         saveState(true);
         renderAll();
       }
@@ -1318,20 +1227,24 @@
           }
           gdriveState.driveFileId = fileMeta.id;
           const remoteData = await downloadDriveFile(gdriveState.accessToken, fileMeta.id);
-          const localCount = countTotalRecords(rootState);
+          const localCount = countTotalRecords(state);
           const remoteCount = countTotalRecords(remoteData);
+          const cleanRemote = sanitizeStateData(remoteData);
 
           if (localCount === 0 && remoteCount > 0) {
-            applyRemoteRootState(remoteData);
+            applyRemoteRootState(cleanRemote);
             const nowTime = new Date().toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
             gdriveState.lastSyncAt = nowTime;
             gdriveState.syncing = false;
+            saveDriveSession();
             updateSyncUI(`마지막 동기화: ${nowTime}`);
             showToast('Google Drive에서 기존 차계부 데이터를 불러왔습니다.');
             return;
           }
 
-          if (remoteCount > 0 && JSON.stringify(remoteData.accounts) !== JSON.stringify(rootState.accounts)) {
+          const localFingerprint = JSON.stringify({ v: state.vehicles, f: state.fuelLogs, m: state.maintLogs });
+          const remoteFingerprint = JSON.stringify({ v: cleanRemote.vehicles, f: cleanRemote.fuelLogs, m: cleanRemote.maintLogs });
+          if (remoteCount > 0 && localFingerprint !== remoteFingerprint) {
             gdriveState.pendingRemotePayload = remoteData;
             gdriveState.syncing = false;
             updateSyncUI('동기화 선택 대기 중');
@@ -1631,59 +1544,8 @@
         }
       }
 
-      function renderHeaderAccount() {
-        const acc = getActiveAccount();
-        const nameEl = document.getElementById('headerAccountName');
-        const dotEl = document.getElementById('headerAccountDot');
-        if (nameEl) nameEl.textContent = acc.name;
-        if (dotEl) {
-          dotEl.textContent = (acc.name || '유').trim().charAt(0);
-          dotEl.style.backgroundColor = acc.color || '#0ea5e9';
-        }
-      }
-
-      function renderAccountList() {
-        const listEl = document.getElementById('accountList');
-        if (!listEl) return;
-        listEl.innerHTML = rootState.accounts.map(acc => {
-          const isActive = acc.id === rootState.activeAccountId;
-          const vCount = acc.data.vehicles.length;
-          const logCount = acc.data.fuelLogs.length + acc.data.maintLogs.length;
-          return `
-            <div class="flex items-center justify-between p-3 rounded-xl border ${isActive ? 'border-sky-400 bg-sky-50/60' : 'border-slate-200 bg-slate-50/50'}">
-              <div class="flex items-center gap-3 min-w-0">
-                <div class="w-9 h-9 rounded-full text-white font-bold text-sm flex items-center justify-center shrink-0" style="background-color: ${esc(acc.color || '#0ea5e9')}">
-                  ${esc((acc.name || '유').trim().charAt(0))}
-                </div>
-                <div class="min-w-0">
-                  <div class="flex items-center gap-1.5">
-                    <span class="text-sm font-bold text-slate-800 truncate">${esc(acc.name)}</span>
-                    ${isActive ? '<span class="text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-sky-600 text-white">사용 중</span>' : ''}
-                  </div>
-                  <div class="text-xs text-slate-500">차량 ${vCount}대 · 기록 ${logCount}건</div>
-                </div>
-              </div>
-              <div class="flex items-center gap-1 shrink-0">
-                ${!isActive ? `<button data-switch-account="${esc(acc.id)}" class="px-2.5 py-1.5 rounded-lg bg-sky-600 hover:bg-sky-700 text-white text-xs font-semibold">전환</button>` : ''}
-                <button data-edit-account="${esc(acc.id)}" class="p-1.5 text-slate-500 hover:text-sky-600 rounded-lg hover:bg-sky-50" title="이름 수정">
-                  <i data-lucide="pencil" class="w-4 h-4"></i>
-                </button>
-                ${rootState.accounts.length > 1 ? `
-                  <button data-del-account="${esc(acc.id)}" class="p-1.5 text-slate-500 hover:text-rose-600 rounded-lg hover:bg-rose-50" title="계정 삭제">
-                    <i data-lucide="trash-2" class="w-4 h-4"></i>
-                  </button>
-                ` : ''}
-              </div>
-            </div>
-          `;
-        }).join('');
-        if (window.lucide) lucide.createIcons();
-      }
-
       function renderAll() {
         applyLanguage();
-        syncActiveStateRef();
-        renderHeaderAccount();
         renderVehicleTabs();
         renderVehicleBanner();
         renderDashboard();
@@ -1725,7 +1587,7 @@
       function renderVehicleBanner() {
         const v = getActiveVehicle();
         if (!v) {
-          document.getElementById('headerSubtitle').textContent = currentLang === 'en' ? 'Sign in to sync or add a vehicle' : '로그인하여 불러오기 또는 차량 추가';
+          document.getElementById('headerSubtitle').textContent = '';
           document.getElementById('vehicleBanner').innerHTML = `
             <div class="flex items-center gap-3.5">
               <div class="w-14 h-14 rounded-2xl flex items-center justify-center bg-slate-100 text-slate-400 shrink-0 border border-slate-200">
@@ -1752,7 +1614,7 @@
         const odo = getVehicleOdo(v.id);
         const fuelCount = state.fuelLogs.filter(f => f.vehicleId === v.id).length;
         const maintCount = state.maintLogs.filter(m => m.vehicleId === v.id).length;
-        document.getElementById('headerSubtitle').textContent = `${v.name} · ${v.fuelType}`;
+        document.getElementById('headerSubtitle').textContent = `· ${v.name}`;
 
         document.getElementById('vehicleBanner').innerHTML = `
           <div class="flex items-center gap-3.5">
@@ -2445,47 +2307,6 @@
           return;
         }
 
-        const switchAcc = e.target.closest('[data-switch-account]');
-        if (switchAcc) {
-          rootState.activeAccountId = switchAcc.dataset.switchAccount;
-          syncActiveStateRef();
-          saveState();
-          closeModal('accountModal');
-          renderAll();
-          showToast(`${getActiveAccount().name} 계정으로 전환했습니다.`);
-          return;
-        }
-
-        const editAcc = e.target.closest('[data-edit-account]');
-        if (editAcc) {
-          const acc = rootState.accounts.find(a => a.id === editAcc.dataset.editAccount);
-          if (!acc) return;
-          document.getElementById('accountFormTitle').textContent = '계정 이름 수정';
-          document.getElementById('accountEditId').value = acc.id;
-          document.getElementById('accName').value = acc.name;
-          document.getElementById('accPresetWrapper').classList.add('hidden');
-          document.getElementById('accFirstCarWrapper').classList.add('hidden');
-          document.getElementById('btnCancelAccountEdit').classList.remove('hidden');
-          return;
-        }
-
-        const delAcc = e.target.closest('[data-del-account]');
-        if (delAcc) {
-          const id = delAcc.dataset.delAccount;
-          openConfirm('사용자 계정 삭제', '이 계정과 계정에 저장된 모든 차량 및 기록이 삭제됩니다. 계속할까요?', () => {
-            rootState.accounts = rootState.accounts.filter(a => a.id !== id);
-            if (rootState.activeAccountId === id) {
-              rootState.activeAccountId = rootState.accounts[0].id;
-            }
-            syncActiveStateRef();
-            saveState();
-            renderAccountList();
-            renderAll();
-            showToast('계정이 삭제되었습니다.');
-          });
-          return;
-        }
-
         const delVeh = e.target.closest('[data-del-vehicle]');
         if (delVeh) {
           const id = delVeh.dataset.delVehicle;
@@ -2510,82 +2331,6 @@
       // Maint Modal Triggers
       ['btnOpenMaintModalTop', 'btnOpenMaintModalMobile', 'btnAddMaintInTab'].forEach(id => {
         document.getElementById(id).addEventListener('click', () => openMaintModal(null));
-      });
-
-      // Account Modal Triggers
-      document.getElementById('btnOpenAccountModal').addEventListener('click', () => {
-        document.getElementById('accountForm').reset();
-        document.getElementById('accountEditId').value = '';
-        document.getElementById('accountFormTitle').textContent = '새 사용자 계정 추가';
-        document.getElementById('accPresetWrapper').classList.remove('hidden');
-        document.getElementById('accFirstCarWrapper').classList.remove('hidden');
-        document.getElementById('btnCancelAccountEdit').classList.add('hidden');
-        renderAccountList();
-        document.getElementById('accountModal').classList.remove('hidden');
-      });
-
-      document.getElementById('accPreset').addEventListener('change', (e) => {
-        const showFirst = e.target.value === 'empty';
-        document.getElementById('accFirstCarWrapper').classList.toggle('hidden', !showFirst);
-      });
-
-      document.getElementById('btnCancelAccountEdit').addEventListener('click', () => {
-        document.getElementById('accountForm').reset();
-        document.getElementById('accountEditId').value = '';
-        document.getElementById('accountFormTitle').textContent = '새 사용자 계정 추가';
-        document.getElementById('accPresetWrapper').classList.remove('hidden');
-        document.getElementById('accFirstCarWrapper').classList.remove('hidden');
-        document.getElementById('btnCancelAccountEdit').classList.add('hidden');
-      });
-
-      document.getElementById('accountForm').addEventListener('submit', (e) => {
-        e.preventDefault();
-        const editId = document.getElementById('accountEditId').value;
-        const name = document.getElementById('accName').value.trim();
-        if (!name) return;
-
-        if (editId) {
-          const acc = rootState.accounts.find(a => a.id === editId);
-          if (acc) acc.name = name;
-          showToast('계정 이름이 수정되었습니다.');
-        } else {
-          const colors = ['#0ea5e9', '#6366f1', '#10b981', '#f59e0b', '#ec4899'];
-          const preset = document.getElementById('accPreset').value;
-          let newData;
-          if (preset === 'bmw_audi') {
-            newData = JSON.parse(JSON.stringify(DEFAULT_STATE));
-          } else {
-            const firstCar = document.getElementById('accFirstCarName').value.trim() || '내 차량';
-            const carId = uid();
-            newData = {
-              activeVehicleId: carId,
-              activeTab: 'dashboard',
-              vehicles: [{ id: carId, name: firstCar, year: new Date().getFullYear(), fuelType: '가솔린', plate: '', initialOdo: 0, color: '#0284c7' }],
-              fuelLogs: [],
-              maintLogs: []
-            };
-          }
-          const newAcc = {
-            id: uid(),
-            name,
-            color: colors[rootState.accounts.length % colors.length],
-            data: newData
-          };
-          rootState.accounts.push(newAcc);
-          rootState.activeAccountId = newAcc.id;
-          syncActiveStateRef();
-          showToast(`${name} 계정을 생성하고 전환했습니다.`);
-        }
-
-        document.getElementById('accountForm').reset();
-        document.getElementById('accountEditId').value = '';
-        document.getElementById('accountFormTitle').textContent = '새 사용자 계정 추가';
-        document.getElementById('accPresetWrapper').classList.remove('hidden');
-        document.getElementById('accFirstCarWrapper').classList.remove('hidden');
-        document.getElementById('btnCancelAccountEdit').classList.add('hidden');
-        saveState();
-        renderAccountList();
-        renderAll();
       });
 
       // Vehicle Modal Trigger
@@ -2802,14 +2547,7 @@
           try {
             const imported = JSON.parse(reader.result);
             if (!imported.vehicles || !Array.isArray(imported.vehicles)) throw new Error('Invalid format');
-            getActiveAccount().data = {
-              activeVehicleId: imported.activeVehicleId || imported.vehicles[0].id,
-              activeTab: 'dashboard',
-              vehicles: imported.vehicles,
-              fuelLogs: Array.isArray(imported.fuelLogs) ? imported.fuelLogs : [],
-              maintLogs: Array.isArray(imported.maintLogs) ? imported.maintLogs : []
-            };
-            syncActiveStateRef();
+            state = sanitizeStateData(imported);
             saveState();
             renderAll();
             showToast('백업 데이터를 성공적으로 불러왔습니다.');
@@ -2823,7 +2561,7 @@
 
       document.getElementById('btnLoadSample').addEventListener('click', () => {
         openConfirm('샘플 데이터 불러오기', 'BMW 5GT와 아우디 A3의 체험용 샘플 주유·정비 데이터를 추가합니다. 기존 데이터는 초기화됩니다.', () => {
-          getActiveAccount().data = {
+          state = {
             activeVehicleId: 'bmw-5gt-2016',
             activeTab: 'dashboard',
             vehicles: JSON.parse(JSON.stringify(DEFAULT_STATE.vehicles)),
@@ -2842,7 +2580,6 @@
               { id: uid(), vehicleId: 'audi-a3-2015', date: '2026-10-02', odo: 94500, category: '엔진오일', cost: 130000, shop: '모터스', memo: '오일 교환 및 하부 점검' }
             ]
           };
-          syncActiveStateRef();
           saveState();
           renderAll();
           showToast('체험용 샘플 데이터를 불러왔습니다.');
@@ -2851,8 +2588,7 @@
 
       document.getElementById('btnResetAll').addEventListener('click', () => {
         openConfirm('전체 데이터 초기화', '저장된 모든 주유 및 정비 기록을 삭제하고 초기 상태로 되돌릴까요?', () => {
-          getActiveAccount().data = JSON.parse(JSON.stringify(DEFAULT_STATE));
-          syncActiveStateRef();
+          state = JSON.parse(JSON.stringify(DEFAULT_STATE));
           saveState();
           renderAll();
           showToast('현재 계정의 데이터가 초기화되었습니다.');
@@ -2870,10 +2606,8 @@
       document.getElementById('btnSyncHeader').addEventListener('click', () => {
         if (gdriveState.accessToken) {
           uploadToDrive(false);
-        } else if (gdriveState.wasLoggedIn) {
-          startGoogleLogin(false);
         } else {
-          setActiveTab('backup');
+          startGoogleLogin(false);
         }
       });
 

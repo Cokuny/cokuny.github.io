@@ -364,6 +364,7 @@
             <span class="text-slate-400">릴리스 2026.11.22</span>
           </div>
           <ul class="list-disc list-inside space-y-1 text-slate-500 pt-1">
+            <li>초기 실행 시 빈 차고로 시작 · 로그인 시 Drive 데이터 자동 불러오기 (v1.6.0)</li>
             <li>모바일 상단 헤더 2줄 배치로 앱 제목 가독성 개선 (v1.5.1)</li>
             <li>Google 로그인 세션 유지 · 자동 연장 및 원클릭 재연결 지원 (v1.5.0)</li>
             <li>기본 Google OAuth 클라이언트 ID 내장 적용 (v1.4.1)</li>
@@ -651,7 +652,7 @@
     (function () {
       'use strict';
 
-      const APP_VERSION = 'v1.5.1';
+      const APP_VERSION = 'v1.6.0';
       const DEFAULT_GDRIVE_CLIENT_ID = '126554316010-1v3tt4ff6pjchimdlfschr7rs6or48tg.apps.googleusercontent.com';
       const LANG_STORAGE_KEY = 'smart_car_logbook_lang';
       let currentLang = loadLang();
@@ -822,12 +823,9 @@
       ];
 
       const DEFAULT_STATE = {
-        activeVehicleId: 'bmw-5gt-2016',
+        activeVehicleId: null,
         activeTab: 'dashboard',
-        vehicles: [
-          { id: 'bmw-5gt-2016', brand: 'BMW', name: '2016 BMW 5시리즈 GT', year: 2016, fuelType: '디젤', plate: '', initialOdo: 0, color: '#0284c7' },
-          { id: 'audi-a3-2015', brand: 'Audi', name: '2015 아우디 A3', year: 2015, fuelType: '디젤', plate: '', initialOdo: 0, color: '#4f46e5' }
-        ],
+        vehicles: [],
         fuelLogs: [],
         maintLogs: []
       };
@@ -839,11 +837,11 @@
       let confirmCallback = null;
 
       function sanitizeAccountData(parsed) {
-        if (!parsed || !Array.isArray(parsed.vehicles) || !parsed.vehicles.length) {
+        if (!parsed || !Array.isArray(parsed.vehicles)) {
           return JSON.parse(JSON.stringify(DEFAULT_STATE));
         }
         return {
-          activeVehicleId: parsed.activeVehicleId || parsed.vehicles[0].id,
+          activeVehicleId: parsed.vehicles.length ? (parsed.activeVehicleId || parsed.vehicles[0].id) : null,
           activeTab: parsed.activeTab || 'dashboard',
           vehicles: parsed.vehicles,
           fuelLogs: Array.isArray(parsed.fuelLogs) ? parsed.fuelLogs : [],
@@ -1279,7 +1277,10 @@
         if (!rs || !Array.isArray(rs.accounts)) return 0;
         return rs.accounts.reduce((sum, a) => {
           const d = a.data || {};
-          return sum + (Array.isArray(d.fuelLogs) ? d.fuelLogs.length : 0) + (Array.isArray(d.maintLogs) ? d.maintLogs.length : 0);
+          return sum +
+            (Array.isArray(d.vehicles) ? d.vehicles.length : 0) +
+            (Array.isArray(d.fuelLogs) ? d.fuelLogs.length : 0) +
+            (Array.isArray(d.maintLogs) ? d.maintLogs.length : 0);
         }, 0);
       }
 
@@ -1496,6 +1497,7 @@
       }
 
       function getActiveVehicle() {
+        if (!state.vehicles || !state.vehicles.length) return null;
         return state.vehicles.find(v => v.id === state.activeVehicleId) || state.vehicles[0];
       }
 
@@ -1691,6 +1693,17 @@
 
       function renderVehicleTabs() {
         const container = document.getElementById('vehicleTabs');
+        if (!state.vehicles.length) {
+          container.innerHTML = `
+            <button id="btnEmptyAddVehicleTab" class="shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-slate-800/80 text-slate-300 hover:bg-slate-800 transition">
+              <i data-lucide="plus-circle" class="w-3.5 h-3.5 text-sky-400"></i>
+              <span>${currentLang === 'en' ? 'No vehicles yet · Add Vehicle' : '등록된 차량 없음 · 차량 추가'}</span>
+            </button>
+          `;
+          const btn = document.getElementById('btnEmptyAddVehicleTab');
+          if (btn) btn.addEventListener('click', () => document.getElementById('btnOpenVehicleModal').click());
+          return;
+        }
         container.innerHTML = state.vehicles.map(v => {
           const active = v.id === state.activeVehicleId;
           return `
@@ -1709,6 +1722,31 @@
 
       function renderVehicleBanner() {
         const v = getActiveVehicle();
+        if (!v) {
+          document.getElementById('headerSubtitle').textContent = currentLang === 'en' ? 'Sign in to sync or add a vehicle' : '로그인하여 불러오기 또는 차량 추가';
+          document.getElementById('vehicleBanner').innerHTML = `
+            <div class="flex items-center gap-3.5">
+              <div class="w-14 h-14 rounded-2xl flex items-center justify-center bg-slate-100 text-slate-400 shrink-0 border border-slate-200">
+                <i data-lucide="car" class="w-7 h-7"></i>
+              </div>
+              <div>
+                <h2 class="text-base sm:text-lg font-bold text-slate-900">${currentLang === 'en' ? 'No vehicles registered yet' : '등록된 차량이 없습니다'}</h2>
+                <p class="text-xs text-slate-500 mt-0.5">${currentLang === 'en' ? 'Sign in with Google to load your Drive backup, or add a vehicle manually.' : 'Google 계정으로 로그인해 기존 데이터를 불러오거나 새 차량을 추가해 주세요.'}</p>
+              </div>
+            </div>
+            <div class="flex items-center gap-2 shrink-0">
+              <button id="btnBannerGoogleLogin" class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-sky-600 hover:bg-sky-700 text-white text-xs font-semibold shadow-xs transition">
+                <i data-lucide="cloud" class="w-3.5 h-3.5"></i> ${currentLang === 'en' ? 'Sign in & Load' : '로그인 · 불러오기'}
+              </button>
+              <button id="btnBannerAddVehicle" class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-semibold transition">
+                <i data-lucide="plus" class="w-3.5 h-3.5"></i> ${currentLang === 'en' ? 'Add Vehicle' : '차량 추가'}
+              </button>
+            </div>
+          `;
+          document.getElementById('btnBannerGoogleLogin').addEventListener('click', () => startGoogleLogin(false));
+          document.getElementById('btnBannerAddVehicle').addEventListener('click', () => document.getElementById('btnOpenVehicleModal').click());
+          return;
+        }
         const odo = getVehicleOdo(v.id);
         const fuelCount = state.fuelLogs.filter(f => f.vehicleId === v.id).length;
         const maintCount = state.maintLogs.filter(m => m.vehicleId === v.id).length;
@@ -1739,8 +1777,8 @@
 
       function renderDashboard() {
         const v = getActiveVehicle();
-        const fuelStats = computeFuelStats(v.id);
-        const maintLogs = state.maintLogs.filter(m => m.vehicleId === v.id);
+        const fuelStats = v ? computeFuelStats(v.id) : { enrichedAsc: [], enrichedDesc: [], avgEfficiency: null, latestEfficiency: null, totalFuelCost: 0, totalLitersAll: 0 };
+        const maintLogs = v ? state.maintLogs.filter(m => m.vehicleId === v.id) : [];
         const totalMaintCost = maintLogs.reduce((s, m) => s + Number(m.cost || 0), 0);
         const totalSpend = fuelStats.totalFuelCost + totalMaintCost;
 
@@ -1833,10 +1871,10 @@
         }
 
         // Dashboard Consumables Summary (top 4 tracked)
-        const currentOdo = getVehicleOdo(v.id);
+        const currentOdo = v ? getVehicleOdo(v.id) : 0;
         const tracked = MAINT_CATEGORIES.filter(c => c.intervalKm).slice(0, 4);
         document.getElementById('dashboardConsumablesList').innerHTML = tracked.map(cat => {
-          const info = getConsumableStatus(v.id, cat, currentOdo);
+          const info = v ? getConsumableStatus(v.id, cat, currentOdo) : { lastLog: null, pct: 0, statusText: t('statusNone'), barClass: 'bg-slate-200', textClass: 'text-slate-400' };
           return `
             <div>
               <div class="flex items-center justify-between text-xs mb-1">
@@ -1902,7 +1940,7 @@
       function renderCharts() {
         if (typeof Chart === 'undefined') return;
         const v = getActiveVehicle();
-        const fuelStats = computeFuelStats(v.id);
+        const fuelStats = v ? computeFuelStats(v.id) : { enrichedAsc: [] };
         const effPoints = fuelStats.enrichedAsc.filter(f => f.efficiency !== null);
 
         const effCanvas = document.getElementById('efficiencyChart');
@@ -1947,12 +1985,12 @@
 
         // Monthly expense chart
         const monthMap = {};
-        state.fuelLogs.filter(f => f.vehicleId === v.id).forEach(f => {
+        (v ? state.fuelLogs.filter(f => f.vehicleId === v.id) : []).forEach(f => {
           const m = f.date.slice(0, 7);
           if (!monthMap[m]) monthMap[m] = { fuel: 0, maint: 0 };
           monthMap[m].fuel += Number(f.totalCost || 0);
         });
-        state.maintLogs.filter(m => m.vehicleId === v.id).forEach(m => {
+        (v ? state.maintLogs.filter(m => m.vehicleId === v.id) : []).forEach(m => {
           const ym = m.date.slice(0, 7);
           if (!monthMap[ym]) monthMap[ym] = { fuel: 0, maint: 0 };
           monthMap[ym].maint += Number(m.cost || 0);
@@ -2005,6 +2043,15 @@
 
       function renderFuelTab() {
         const v = getActiveVehicle();
+        if (!v) {
+          document.getElementById('fuelSummaryBadge').textContent = '0건';
+          document.getElementById('fuelListContainer').innerHTML = `
+            <div class="p-10 text-center text-sm text-slate-400">
+              ${currentLang === 'en' ? 'No vehicle selected. Please add a vehicle or sign in to load data.' : '등록된 차량이 없습니다. 먼저 차량을 추가하거나 로그인하여 데이터를 불러오세요.'}
+            </div>
+          `;
+          return;
+        }
         const stats = computeFuelStats(v.id);
         const monthFilter = document.getElementById('fuelMonthFilter').value;
         const rows = monthFilter
@@ -2063,6 +2110,16 @@
 
       function renderMaintenanceTab() {
         const v = getActiveVehicle();
+        if (!v) {
+          document.getElementById('consumablesGrid').innerHTML = '';
+          document.getElementById('maintSummaryText').textContent = '0건';
+          document.getElementById('maintListContainer').innerHTML = `
+            <div class="p-10 text-center text-sm text-slate-400">
+              ${currentLang === 'en' ? 'No vehicle selected. Please add a vehicle or sign in to load data.' : '등록된 차량이 없습니다. 먼저 차량을 추가하거나 로그인하여 데이터를 불러오세요.'}
+            </div>
+          `;
+          return;
+        }
         const currentOdo = getVehicleOdo(v.id);
 
         // Consumables grid
@@ -2142,6 +2199,11 @@
 
       function renderVehicleManager() {
         const listEl = document.getElementById('vehicleManagerList');
+        if (!state.vehicles.length) {
+          listEl.innerHTML = `<div class="p-4 text-center text-xs text-slate-400 bg-slate-50 rounded-xl border border-slate-200">${currentLang === 'en' ? 'No vehicles registered yet.' : '등록된 차량이 없습니다. 아래에서 새 차량을 추가해 주세요.'}</div>`;
+          if (window.lucide) lucide.createIcons();
+          return;
+        }
         listEl.innerHTML = state.vehicles.map(v => `
           <div class="flex items-center justify-between p-3 rounded-xl border border-slate-200 bg-slate-50/50">
             <div class="flex items-center gap-3">
@@ -2171,6 +2233,11 @@
       // Open Fuel Modal
       function openFuelModal(editId) {
         const v = getActiveVehicle();
+        if (!v) {
+          showToast(currentLang === 'en' ? 'Please add a vehicle or sign in first.' : '먼저 차량을 추가하거나 로그인해 데이터를 불러오세요.');
+          document.getElementById('btnOpenVehicleModal').click();
+          return;
+        }
         const form = document.getElementById('fuelForm');
         form.reset();
         document.getElementById('fuelPreviewBox').classList.add('hidden');
@@ -2239,6 +2306,11 @@
       // Open Maint Modal
       function openMaintModal(editId, presetCategory) {
         const v = getActiveVehicle();
+        if (!v) {
+          showToast(currentLang === 'en' ? 'Please add a vehicle or sign in first.' : '먼저 차량을 추가하거나 로그인해 데이터를 불러오세요.');
+          document.getElementById('btnOpenVehicleModal').click();
+          return;
+        }
         const form = document.getElementById('maintForm');
         form.reset();
         document.getElementById('maintEditId').value = '';
@@ -2688,6 +2760,7 @@
       // Exports & Backups
       document.getElementById('btnExportFuelCsv').addEventListener('click', () => {
         const v = getActiveVehicle();
+        if (!v) { showToast('내보낼 차량이 없습니다.'); return; }
         const stats = computeFuelStats(v.id);
         const headers = ['차량명', '날짜', '주행거리(km)', '주유량(L)', '금액(원)', '단가(원/L)', '가득여부', '연비(km/L)', '주유소', '메모'];
         const lines = [headers.map(csvCell).join(',')];
@@ -2703,6 +2776,7 @@
 
       document.getElementById('btnExportMaintCsv').addEventListener('click', () => {
         const v = getActiveVehicle();
+        if (!v) { showToast('내보낼 차량이 없습니다.'); return; }
         const rows = state.maintLogs.filter(m => m.vehicleId === v.id).sort((a, b) => b.date.localeCompare(a.date));
         const headers = ['차량명', '날짜', '주행거리(km)', '정비항목', '비용(원)', '정비소', '메모'];
         const lines = [headers.map(csvCell).join(',')];

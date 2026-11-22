@@ -41,14 +41,18 @@
         </div>
         <div class="min-w-0">
           <div class="flex items-center gap-1.5">
-            <h1 class="text-base font-bold tracking-tight truncate">스마트 차계부</h1>
+            <h1 id="appTitleText" class="text-base font-bold tracking-tight truncate">스마트 차계부</h1>
             <button id="btnVersionBadge" data-goto="backup" class="text-[10px] font-semibold px-1.5 py-0.5 rounded-md bg-sky-500/20 text-sky-300 border border-sky-400/30 hover:bg-sky-500/30 transition shrink-0" title="앱 버전 정보 보기">v1.0.0</button>
           </div>
           <p class="text-[11px] text-slate-400 truncate" id="headerSubtitle">차량별 주유 · 연비 · 정비 관리</p>
         </div>
       </div>
 
-      <div class="flex items-center gap-2 shrink-0">
+      <div class="flex items-center gap-1.5 sm:gap-2 shrink-0">
+        <button id="btnLangToggle" class="inline-flex items-center gap-1 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 text-[11px] font-bold px-2 py-2 rounded-lg transition" title="한국어 / English 전환">
+          <i data-lucide="languages" class="w-3.5 h-3.5 text-sky-400"></i>
+          <span id="langToggleLabel">EN</span>
+        </button>
         <button id="btnSyncHeader" class="inline-flex items-center gap-1.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 text-xs px-2.5 py-2 rounded-lg transition" title="Google Drive 동기화 상태">
           <span id="headerSyncIconWrap" class="inline-flex items-center"><i id="headerSyncIcon" data-lucide="cloud-off" class="w-3.5 h-3.5 text-slate-400"></i></span>
           <span id="headerSyncText" class="hidden md:inline font-medium">동기화</span>
@@ -59,14 +63,14 @@
           <i data-lucide="chevron-down" class="w-3.5 h-3.5 text-slate-400"></i>
         </button>
         <button id="btnOpenFuelModalTop" class="hidden sm:inline-flex items-center gap-1.5 bg-sky-500 hover:bg-sky-400 text-slate-950 font-semibold text-xs px-3 py-2 rounded-lg transition">
-          <i data-lucide="fuel" class="w-3.5 h-3.5"></i> 주유 입력
+          <i data-lucide="fuel" class="w-3.5 h-3.5"></i> <span data-i18n="addFuelBtn">주유 입력</span>
         </button>
         <button id="btnOpenMaintModalTop" class="hidden sm:inline-flex items-center gap-1.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-white font-medium text-xs px-3 py-2 rounded-lg transition">
-          <i data-lucide="wrench" class="w-3.5 h-3.5"></i> 정비 입력
+          <i data-lucide="wrench" class="w-3.5 h-3.5"></i> <span data-i18n="addMaintBtn">정비 입력</span>
         </button>
         <button id="btnOpenVehicleModal" class="inline-flex items-center gap-1 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 text-xs px-2.5 py-2 rounded-lg transition" title="차량 관리">
           <i data-lucide="settings-2" class="w-4 h-4"></i>
-          <span class="hidden sm:inline">차량 관리</span>
+          <span class="hidden sm:inline" data-i18n="vehiclesBtn">차량 관리</span>
         </button>
       </div>
     </div>
@@ -81,16 +85,16 @@
   <nav class="hidden md:block bg-white border-b border-slate-200 sticky top-[104px] z-20">
     <div class="max-w-5xl mx-auto px-4 flex items-center gap-1" id="desktopNav">
       <button data-tab="dashboard" class="nav-tab px-4 py-3 text-sm font-semibold border-b-2 transition flex items-center gap-2">
-        <i data-lucide="layout-dashboard" class="w-4 h-4"></i> 대시보드
+        <i data-lucide="layout-dashboard" class="w-4 h-4"></i> <span data-i18n="navDashboard">대시보드</span>
       </button>
       <button data-tab="fuel" class="nav-tab px-4 py-3 text-sm font-semibold border-b-2 transition flex items-center gap-2">
-        <i data-lucide="fuel" class="w-4 h-4"></i> 주유 · 연비
+        <i data-lucide="fuel" class="w-4 h-4"></i> <span data-i18n="navFuel">주유 · 연비</span>
       </button>
       <button data-tab="maintenance" class="nav-tab px-4 py-3 text-sm font-semibold border-b-2 transition flex items-center gap-2">
-        <i data-lucide="wrench" class="w-4 h-4"></i> 정비 · 소모품
+        <i data-lucide="wrench" class="w-4 h-4"></i> <span data-i18n="navMaint">정비 · 소모품</span>
       </button>
       <button data-tab="backup" class="nav-tab px-4 py-3 text-sm font-semibold border-b-2 transition flex items-center gap-2">
-        <i data-lucide="database" class="w-4 h-4"></i> 백업 · 내보내기
+        <i data-lucide="database" class="w-4 h-4"></i> <span data-i18n="navBackup">백업 · 내보내기</span>
       </button>
     </div>
   </nav>
@@ -121,9 +125,9 @@
         <div class="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm">
           <div class="flex items-center justify-between mb-3">
             <h2 class="text-sm font-bold text-slate-800 flex items-center gap-1.5">
-              <i data-lucide="trending-up" class="w-4 h-4 text-sky-600"></i> 연비 추이 (km/L)
+              <i data-lucide="trending-up" class="w-4 h-4 text-sky-600"></i> <span data-i18n="chartEffTitle">연비 추이 (km/L)</span>
             </h2>
-            <span class="text-xs text-slate-400">가득 주유 기준</span>
+            <span class="text-xs text-slate-400" data-i18n="chartEffSub">가득 주유 기준</span>
           </div>
           <div class="relative h-60">
             <canvas id="efficiencyChart"></canvas>
@@ -137,9 +141,9 @@
         <div class="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm">
           <div class="flex items-center justify-between mb-3">
             <h2 class="text-sm font-bold text-slate-800 flex items-center gap-1.5">
-              <i data-lucide="bar-chart-3" class="w-4 h-4 text-indigo-600"></i> 월별 지출 현황 (원)
+              <i data-lucide="bar-chart-3" class="w-4 h-4 text-indigo-600"></i> <span data-i18n="chartExpTitle">월별 지출 현황 (원)</span>
             </h2>
-            <span class="text-xs text-slate-400">주유비 + 정비비</span>
+            <span class="text-xs text-slate-400" data-i18n="chartExpSub">주유비 + 정비비</span>
           </div>
           <div class="relative h-60">
             <canvas id="expenseChart"></canvas>
@@ -155,16 +159,16 @@
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <div class="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm">
           <div class="flex items-center justify-between mb-3">
-            <h2 class="text-sm font-bold text-slate-800">최근 기록</h2>
-            <button data-goto="fuel" class="text-xs font-medium text-sky-600 hover:text-sky-700">전체 보기</button>
+            <h2 class="text-sm font-bold text-slate-800" data-i18n="recentTitle">최근 기록</h2>
+            <button data-goto="fuel" class="text-xs font-medium text-sky-600 hover:text-sky-700" data-i18n="viewAll">전체 보기</button>
           </div>
           <div id="recentActivityList" class="divide-y divide-slate-100"></div>
         </div>
 
         <div class="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm">
           <div class="flex items-center justify-between mb-3">
-            <h2 class="text-sm font-bold text-slate-800">주요 소모품 상태</h2>
-            <button data-goto="maintenance" class="text-xs font-medium text-sky-600 hover:text-sky-700">주기 관리</button>
+            <h2 class="text-sm font-bold text-slate-800" data-i18n="consumablesTitle">주요 소모품 상태</h2>
+            <button data-goto="maintenance" class="text-xs font-medium text-sky-600 hover:text-sky-700" data-i18n="manageCycles">주기 관리</button>
           </div>
           <div id="dashboardConsumablesList" class="space-y-3"></div>
         </div>
@@ -175,11 +179,11 @@
     <section id="tab-fuel" class="tab-panel hidden space-y-4 animate-fade-in">
       <div class="flex flex-wrap items-center justify-between gap-3 bg-white rounded-2xl border border-slate-200 p-4 shadow-sm">
         <div>
-          <h2 class="text-base font-bold text-slate-900">주유 및 연비 기록</h2>
-          <p class="text-xs text-slate-500 mt-0.5">누적 주행거리와 주유량을 입력하면 직전 가득 주유 대비 연비가 자동 계산됩니다.</p>
+          <h2 class="text-base font-bold text-slate-900" data-i18n="fuelTabTitle">주유 및 연비 기록</h2>
+          <p class="text-xs text-slate-500 mt-0.5" data-i18n="fuelTabDesc">누적 주행거리와 주유량을 입력하면 직전 가득 주유 대비 연비가 자동 계산됩니다.</p>
         </div>
         <button id="btnAddFuelInTab" class="inline-flex items-center gap-1.5 bg-sky-600 hover:bg-sky-700 text-white text-sm font-semibold px-4 py-2.5 rounded-xl transition">
-          <i data-lucide="plus" class="w-4 h-4"></i> 주유 추가
+          <i data-lucide="plus" class="w-4 h-4"></i> <span data-i18n="addFuelBtn">주유 추가</span>
         </button>
       </div>
 
@@ -201,7 +205,7 @@
       <div class="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm space-y-3">
         <div class="flex items-center justify-between">
           <div>
-            <h2 class="text-base font-bold text-slate-900">소모품 교체 주기 트래커</h2>
+            <h2 class="text-base font-bold text-slate-900" data-i18n="consTabTitle">소모품 교체 주기 트래커</h2>
             <p class="text-xs text-slate-500 mt-0.5">정비 내역에 해당 항목을 기록하면 마지막 교체 주행거리 기준으로 자동 계산됩니다.</p>
           </div>
         </div>
@@ -212,7 +216,7 @@
       <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
         <div class="p-4 border-b border-slate-100 flex flex-wrap items-center justify-between gap-3">
           <div>
-            <h2 class="text-base font-bold text-slate-900">정비 · 수리 이력</h2>
+            <h2 class="text-base font-bold text-slate-900" data-i18n="maintTabTitle">정비 · 수리 이력</h2>
             <p class="text-xs text-slate-500 mt-0.5" id="maintSummaryText">총 0건</p>
           </div>
           <div class="flex items-center gap-2">
@@ -220,7 +224,7 @@
               <option value="ALL">전체 항목</option>
             </select>
             <button id="btnAddMaintInTab" class="inline-flex items-center gap-1.5 bg-slate-900 hover:bg-slate-800 text-white text-xs sm:text-sm font-semibold px-3.5 py-2 rounded-xl transition">
-              <i data-lucide="plus" class="w-4 h-4"></i> 정비 추가
+              <i data-lucide="plus" class="w-4 h-4"></i> <span data-i18n="addMaintBtn">정비 추가</span>
             </button>
           </div>
         </div>
@@ -235,9 +239,9 @@
         <div class="flex flex-wrap items-start justify-between gap-3">
           <div>
             <h2 class="text-base font-bold text-slate-900 flex items-center gap-2">
-              <i data-lucide="cloud" class="w-5 h-5 text-sky-600"></i> Google Drive 자동 동기화
+              <i data-lucide="cloud" class="w-5 h-5 text-sky-600"></i> <span data-i18n="driveSyncTitle">Google Drive 자동 동기화</span>
             </h2>
-            <p class="text-xs text-slate-500 mt-1">Google 계정으로 로그인하면 기기 간 데이터를 Google Drive에 자동으로 저장하고 불러옵니다.</p>
+            <p class="text-xs text-slate-500 mt-1">Google 계정으로 로그인하면 <strong>내 드라이브</strong>의 지정 폴더에 백업 파일(<code>smart_car_logbook_sync.json</code>)을 직접 저장하고 동기화합니다.</p>
           </div>
           <span id="driveSyncBadge" class="text-[11px] font-semibold px-2.5 py-1 rounded-full bg-slate-100 text-slate-600">미연결</span>
         </div>
@@ -247,6 +251,14 @@
           <div class="flex gap-2">
             <input type="text" id="gdriveClientId" placeholder="예: 1234567890-xxxx.apps.googleusercontent.com" class="flex-1 border border-slate-300 rounded-xl px-3 py-2 text-xs bg-white outline-none focus:ring-2 focus:ring-sky-500" />
             <button id="btnSaveClientId" class="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-900 text-white text-xs font-semibold shrink-0">저장</button>
+          </div>
+          <div class="pt-1">
+            <label class="block text-xs font-semibold text-slate-700 mb-1">Google Drive 저장 경로 (내 드라이브 기준 폴더)</label>
+            <div class="flex gap-2">
+              <input type="text" id="gdriveFolderPath" placeholder="예: 스마트차계부 또는 백업/차계부 (비우면 내 드라이브 최상위)" class="flex-1 border border-slate-300 rounded-xl px-3 py-2 text-xs bg-white outline-none focus:ring-2 focus:ring-sky-500" />
+              <button id="btnSaveFolderPath" class="px-3.5 py-2 rounded-xl bg-slate-700 hover:bg-slate-800 text-white text-xs font-semibold shrink-0">경로 저장</button>
+            </div>
+            <p class="text-[11px] text-slate-400 mt-1">슬래시(<code>/</code>)로 하위 폴더까지 지정할 수 있으며, 폴더가 없으면 자동으로 생성됩니다.</p>
           </div>
           <details class="text-[11px] text-slate-500 pt-1">
             <summary class="cursor-pointer font-semibold text-sky-700 hover:underline">Google Cloud Console 설정 방법 보기</summary>
@@ -281,7 +293,7 @@
 
       <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm space-y-4">
         <div>
-          <h2 class="text-base font-bold text-slate-900">데이터 백업 및 내보내기</h2>
+          <h2 class="text-base font-bold text-slate-900" data-i18n="backupTitle">데이터 백업 및 내보내기</h2>
           <p class="text-xs text-slate-500 mt-1">모든 차계부 데이터는 현재 브라우저(LocalStorage)에 자동 저장됩니다. 기기를 바꾸거나 엑셀로 정리할 때 아래 기능을 이용하세요.</p>
         </div>
 
@@ -342,16 +354,18 @@
       <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm space-y-3" id="appVersionCard">
         <div class="flex items-center justify-between gap-2">
           <h3 class="text-sm font-bold text-slate-900 flex items-center gap-2">
-            <i data-lucide="info" class="w-4 h-4 text-sky-600"></i> 앱 정보 및 버전
+            <i data-lucide="info" class="w-4 h-4 text-sky-600"></i> <span data-i18n="appInfoTitle">앱 정보 및 버전</span>
           </h3>
           <span id="appVersionText" class="text-xs font-bold px-2.5 py-1 rounded-full bg-sky-50 text-sky-700 border border-sky-200">v1.0.0</span>
         </div>
         <div class="text-xs text-slate-600 space-y-1.5 bg-slate-50 rounded-xl p-3.5 border border-slate-100">
           <div class="flex items-center justify-between">
-            <span class="font-semibold text-slate-800">스마트 차계부 (PWA)</span>
+            <span class="font-semibold text-slate-800" data-i18n="appInfoName">스마트 차계부 (PWA)</span>
             <span class="text-slate-400">릴리스 2026.11.22</span>
           </div>
           <ul class="list-disc list-inside space-y-1 text-slate-500 pt-1">
+            <li>한국어 / 영어(Smart Car Care) 다국어 전환 지원 (v1.4.0)</li>
+            <li>내 드라이브 직접 저장 및 사용자 지정 폴더 경로 설정 지원 (v1.3.0)</li>
             <li>Google Drive 2단계 안정화 저장 · 15초 타임아웃 적용 (v1.2.0)</li>
             <li>Google 계정 로그인 및 Google Drive 자동 동기화 지원 (v1.1.0)</li>
             <li>차량별 브랜드 선택 목록, 로고 및 주행거리 관리</li>
@@ -377,16 +391,16 @@
   <!-- Mobile Bottom Navigation -->
   <nav class="md:hidden fixed bottom-0 inset-x-0 bg-white border-t border-slate-200 z-30 flex justify-around items-center py-1.5 px-2 shadow-lg" id="mobileNav">
     <button data-tab="dashboard" class="mob-tab flex flex-col items-center gap-0.5 py-1 px-3 text-[11px] font-medium">
-      <i data-lucide="layout-dashboard" class="w-5 h-5"></i><span>대시보드</span>
+      <i data-lucide="layout-dashboard" class="w-5 h-5"></i><span data-i18n="navDashboard">대시보드</span>
     </button>
     <button data-tab="fuel" class="mob-tab flex flex-col items-center gap-0.5 py-1 px-3 text-[11px] font-medium">
-      <i data-lucide="fuel" class="w-5 h-5"></i><span>주유·연비</span>
+      <i data-lucide="fuel" class="w-5 h-5"></i><span data-i18n="navFuelShort">주유·연비</span>
     </button>
     <button data-tab="maintenance" class="mob-tab flex flex-col items-center gap-0.5 py-1 px-3 text-[11px] font-medium">
-      <i data-lucide="wrench" class="w-5 h-5"></i><span>정비·소모품</span>
+      <i data-lucide="wrench" class="w-5 h-5"></i><span data-i18n="navMaintShort">정비·소모품</span>
     </button>
     <button data-tab="backup" class="mob-tab flex flex-col items-center gap-0.5 py-1 px-3 text-[11px] font-medium">
-      <i data-lucide="database" class="w-5 h-5"></i><span>백업</span>
+      <i data-lucide="database" class="w-5 h-5"></i><span data-i18n="navBackupShort">백업</span>
     </button>
   </nav>
 
@@ -634,12 +648,137 @@
     (function () {
       'use strict';
 
-      const APP_VERSION = 'v1.2.0';
+      const APP_VERSION = 'v1.4.0';
+      const LANG_STORAGE_KEY = 'smart_car_logbook_lang';
+      let currentLang = loadLang();
+
+      function loadLang() {
+        try {
+          const v = localStorage.getItem(LANG_STORAGE_KEY);
+          return v === 'en' ? 'en' : 'ko';
+        } catch (e) {
+          return 'ko';
+        }
+      }
+
+      function saveLang(lang) {
+        currentLang = lang;
+        try {
+          localStorage.setItem(LANG_STORAGE_KEY, lang);
+        } catch (e) {}
+      }
+
+      const I18N = {
+        ko: {
+          appName: '스마트 차계부',
+          appInfoName: '스마트 차계부 (PWA)',
+          toggleLabel: 'EN',
+          addFuelBtn: '주유 입력',
+          addMaintBtn: '정비 입력',
+          vehiclesBtn: '차량 관리',
+          navDashboard: '대시보드',
+          navFuel: '주유 · 연비',
+          navMaint: '정비 · 소모품',
+          navBackup: '백업 · 내보내기',
+          navFuelShort: '주유·연비',
+          navMaintShort: '정비·소모품',
+          navBackupShort: '백업',
+          chartEffTitle: '연비 추이 (km/L)',
+          chartEffSub: '가득 주유 기준',
+          chartExpTitle: '월별 지출 현황 (원)',
+          chartExpSub: '주유비 + 정비비',
+          recentTitle: '최근 기록',
+          viewAll: '전체 보기',
+          consumablesTitle: '주요 소모품 상태',
+          manageCycles: '주기 관리',
+          fuelTabTitle: '주유 및 연비 기록',
+          fuelTabDesc: '누적 주행거리와 주유량을 입력하면 직전 가득 주유 대비 연비가 자동 계산됩니다.',
+          consTabTitle: '소모품 교체 주기 트래커',
+          maintTabTitle: '정비 · 수리 이력',
+          driveSyncTitle: 'Google Drive 자동 동기화',
+          backupTitle: '데이터 백업 및 내보내기',
+          appInfoTitle: '앱 정보 및 버전',
+          kpiAvgEff: '평균 연비',
+          kpiTotalFuel: '누적 주유비',
+          kpiTotalMaint: '누적 정비비',
+          kpiTotalSpend: '총 차량 유지비',
+          curOdo: '현재 누적 주행거리',
+          currencyUnit: '원',
+          syncIdle: '동기화',
+          syncConnected: 'Drive 연결됨',
+          syncing: '동기화 중',
+          statusGood: '양호',
+          statusDue: '점검 권장',
+          statusOverdue: '교체 필요',
+          statusNone: '기록 없음'
+        },
+        en: {
+          appName: 'Smart Car Care',
+          appInfoName: 'Smart Car Care (PWA)',
+          toggleLabel: '한국어',
+          addFuelBtn: 'Add Fuel',
+          addMaintBtn: 'Add Service',
+          vehiclesBtn: 'Vehicles',
+          navDashboard: 'Dashboard',
+          navFuel: 'Fuel & Economy',
+          navMaint: 'Service & Parts',
+          navBackup: 'Backup & Sync',
+          navFuelShort: 'Fuel',
+          navMaintShort: 'Service',
+          navBackupShort: 'Backup',
+          chartEffTitle: 'Fuel Economy Trend (km/L)',
+          chartEffSub: 'Full-to-Full',
+          chartExpTitle: 'Monthly Expenses (KRW)',
+          chartExpSub: 'Fuel + Service',
+          recentTitle: 'Recent Activity',
+          viewAll: 'View All',
+          consumablesTitle: 'Consumables Status',
+          manageCycles: 'Manage',
+          fuelTabTitle: 'Fuel & Economy Log',
+          fuelTabDesc: 'Enter odometer and fuel volume to automatically calculate km/L between full tanks.',
+          consTabTitle: 'Consumable Replacement Tracker',
+          maintTabTitle: 'Service & Repair History',
+          driveSyncTitle: 'Google Drive Auto-Sync',
+          backupTitle: 'Backup & Export',
+          appInfoTitle: 'App Info & Version',
+          kpiAvgEff: 'Avg Efficiency',
+          kpiTotalFuel: 'Total Fuel Cost',
+          kpiTotalMaint: 'Total Service Cost',
+          kpiTotalSpend: 'Total Spend',
+          curOdo: 'Current Odometer',
+          currencyUnit: 'KRW',
+          syncIdle: 'Sync',
+          syncConnected: 'Drive Synced',
+          syncing: 'Syncing',
+          statusGood: 'Good',
+          statusDue: 'Due Soon',
+          statusOverdue: 'Overdue',
+          statusNone: 'No record'
+        }
+      };
+
+      function t(key) {
+        return (I18N[currentLang] && I18N[currentLang][key]) || (I18N.ko[key]) || key;
+      }
+
+      function applyLanguage() {
+        document.documentElement.lang = currentLang;
+        document.title = currentLang === 'en' ? 'Smart Car Care — Vehicle & Fuel Log' : '스마트 차계부 — BMW 5GT & 아우디 A3';
+        const titleEl = document.getElementById('appTitleText');
+        if (titleEl) titleEl.textContent = t('appName');
+        const toggleLabel = document.getElementById('langToggleLabel');
+        if (toggleLabel) toggleLabel.textContent = t('toggleLabel');
+        document.querySelectorAll('[data-i18n]').forEach(el => {
+          const k = el.getAttribute('data-i18n');
+          if (k) el.textContent = t(k);
+        });
+      }
       const LEGACY_STORAGE_KEY = 'smart_car_logbook_v1';
       const STORAGE_KEY = 'smart_car_logbook_v2';
       const GDRIVE_CLIENT_ID_KEY = 'smart_car_logbook_gdrive_client_id';
+      const GDRIVE_FOLDER_PATH_KEY = 'smart_car_logbook_gdrive_folder';
       const GDRIVE_SYNC_FILENAME = 'smart_car_logbook_sync.json';
-      const GDRIVE_SCOPES = 'https://www.googleapis.com/auth/drive.appdata https://www.googleapis.com/auth/userinfo.email';
+      const GDRIVE_SCOPES = 'https://www.googleapis.com/auth/drive.file https://www.googleapis.com/auth/userinfo.email';
 
       const CAR_BRANDS = [
         { id: 'BMW', label: 'BMW' },
@@ -763,6 +902,8 @@
 
       let gdriveState = {
         clientId: loadClientId(),
+        folderPath: loadFolderPath(),
+        driveFolderId: null,
         accessToken: null,
         userEmail: null,
         driveFileId: null,
@@ -778,6 +919,29 @@
         } catch (e) {
           return '';
         }
+      }
+
+      function loadFolderPath() {
+        try {
+          const v = localStorage.getItem(GDRIVE_FOLDER_PATH_KEY);
+          return v === null ? '스마트차계부' : v;
+        } catch (e) {
+          return '스마트차계부';
+        }
+      }
+
+      function saveFolderPath(val) {
+        const cleaned = String(val || '')
+          .split('/')
+          .map(s => s.trim())
+          .filter(Boolean)
+          .join('/');
+        gdriveState.folderPath = cleaned;
+        gdriveState.driveFolderId = null;
+        gdriveState.driveFileId = null;
+        try {
+          localStorage.setItem(GDRIVE_FOLDER_PATH_KEY, cleaned);
+        } catch (e) {}
       }
 
       function saveClientId(val) {
@@ -886,9 +1050,59 @@
         return null;
       }
 
+      async function ensureDriveFolderPath(token, folderPath) {
+        const segments = String(folderPath || '')
+          .split('/')
+          .map(s => s.trim())
+          .filter(Boolean);
+        let parentId = 'root';
+        for (const seg of segments) {
+          const escapedSeg = seg.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+          const q = encodeURIComponent(
+            `name = '${escapedSeg}' and mimeType = 'application/vnd.google-apps.folder' and '${parentId}' in parents and trashed = false`
+          );
+          const listUrl = `https://www.googleapis.com/drive/v3/files?spaces=drive&q=${q}&fields=files(id,name)`;
+          try {
+            const listRes = await fetchWithTimeout(listUrl, {
+              headers: { Authorization: 'Bearer ' + token }
+            }, 15000);
+            if (!listRes.ok) throw new Error('폴더 조회 실패 (' + listRes.status + ')');
+            const listData = await listRes.json();
+            if (listData.files && listData.files.length) {
+              parentId = listData.files[0].id;
+            } else {
+              const createRes = await fetchWithTimeout(
+                'https://www.googleapis.com/drive/v3/files',
+                {
+                  method: 'POST',
+                  headers: {
+                    Authorization: 'Bearer ' + token,
+                    'Content-Type': 'application/json'
+                  },
+                  body: JSON.stringify({
+                    name: seg,
+                    mimeType: 'application/vnd.google-apps.folder',
+                    parents: [parentId]
+                  })
+                },
+                15000
+              );
+              if (!createRes.ok) throw new Error('폴더 생성 실패 (' + createRes.status + ')');
+              const createdFolder = await createRes.json();
+              parentId = createdFolder.id;
+            }
+          } catch (err) {
+            throw err;
+          }
+        }
+        gdriveState.driveFolderId = parentId;
+        return parentId;
+      }
+
       async function findDriveSyncFile(token) {
-        const q = encodeURIComponent(`name = '${GDRIVE_SYNC_FILENAME}' and trashed = false`);
-        const url = `https://www.googleapis.com/drive/v3/files?spaces=appDataFolder&q=${q}&fields=files(id,name,modifiedTime)`;
+        const folderId = gdriveState.driveFolderId || await ensureDriveFolderPath(token, gdriveState.folderPath);
+        const q = encodeURIComponent(`name = '${GDRIVE_SYNC_FILENAME}' and '${folderId}' in parents and trashed = false`);
+        const url = `https://www.googleapis.com/drive/v3/files?spaces=drive&q=${q}&fields=files(id,name,modifiedTime)`;
         try {
           const res = await fetchWithTimeout(url, {
             headers: { Authorization: 'Bearer ' + token }
@@ -936,7 +1150,7 @@
                 },
                 body: JSON.stringify({
                   name: GDRIVE_SYNC_FILENAME,
-                  parents: ['appDataFolder'],
+                  parents: [gdriveState.driveFolderId || await ensureDriveFolderPath(gdriveState.accessToken, gdriveState.folderPath)],
                   mimeType: 'application/json'
                 })
               },
@@ -1367,6 +1581,7 @@
       }
 
       function renderAll() {
+        applyLanguage();
         syncActiveStateRef();
         renderHeaderAccount();
         renderVehicleTabs();
@@ -1419,7 +1634,7 @@
           </div>
           <div class="flex items-center justify-between sm:justify-end gap-4 border-t sm:border-t-0 pt-3 sm:pt-0 border-slate-100">
             <div class="text-left sm:text-right">
-              <div class="text-[11px] font-medium text-slate-400">현재 누적 주행거리</div>
+              <div class="text-[11px] font-medium text-slate-400">${t('curOdo')}</div>
               <div class="text-xl font-bold text-slate-900 tabular-nums">${fmtNum(odo)} <span class="text-xs font-medium text-slate-500">km</span></div>
             </div>
           </div>
@@ -1435,30 +1650,30 @@
 
         const kpis = [
           {
-            label: '평균 연비',
+            label: t('kpiAvgEff'),
             value: fuelStats.avgEfficiency !== null ? `${fuelStats.avgEfficiency} km/L` : '-',
-            sub: fuelStats.latestEfficiency !== null ? `최근 ${fuelStats.latestEfficiency} km/L` : '가득 주유 2회 이상 시 계산',
+            sub: fuelStats.latestEfficiency !== null ? `${currentLang === 'en' ? 'Latest' : '최근'} ${fuelStats.latestEfficiency} km/L` : (currentLang === 'en' ? 'Needs 2+ full tanks' : '가득 주유 2회 이상 시 계산'),
             icon: 'gauge',
             color: 'text-sky-600 bg-sky-50'
           },
           {
-            label: '누적 주유비',
-            value: `${fmtNum(fuelStats.totalFuelCost)}원`,
-            sub: `총 ${fuelStats.totalLitersAll.toFixed(1)} L 주유`,
+            label: t('kpiTotalFuel'),
+            value: `${fmtNum(fuelStats.totalFuelCost)}${currentLang === 'en' ? ' KRW' : '원'}`,
+            sub: `${fuelStats.totalLitersAll.toFixed(1)} L`,
             icon: 'fuel',
             color: 'text-emerald-600 bg-emerald-50'
           },
           {
-            label: '누적 정비비',
-            value: `${fmtNum(totalMaintCost)}원`,
-            sub: `정비 ${maintLogs.length}건`,
+            label: t('kpiTotalMaint'),
+            value: `${fmtNum(totalMaintCost)}${currentLang === 'en' ? ' KRW' : '원'}`,
+            sub: `${maintLogs.length} ${currentLang === 'en' ? 'records' : '건'}`,
             icon: 'wrench',
             color: 'text-indigo-600 bg-indigo-50'
           },
           {
-            label: '총 차량 유지비',
-            value: `${fmtNum(totalSpend)}원`,
-            sub: '주유비 + 정비비 합계',
+            label: t('kpiTotalSpend'),
+            value: `${fmtNum(totalSpend)}${currentLang === 'en' ? ' KRW' : '원'}`,
+            sub: t('chartExpSub'),
             icon: 'wallet',
             color: 'text-amber-600 bg-amber-50'
           }
@@ -2472,6 +2687,13 @@
         });
       });
 
+      // Language Toggle Handler
+      document.getElementById('btnLangToggle').addEventListener('click', () => {
+        saveLang(currentLang === 'ko' ? 'en' : 'ko');
+        renderAll();
+        updateSyncUI();
+      });
+
       // Google Drive Sync Handlers
       document.getElementById('btnSyncHeader').addEventListener('click', () => {
         if (gdriveState.accessToken) {
@@ -2485,6 +2707,14 @@
         const val = document.getElementById('gdriveClientId').value.trim();
         saveClientId(val);
         showToast(val ? 'Google 클라이언트 ID를 저장했습니다.' : '클라이언트 ID가 비워졌습니다.');
+      });
+
+      document.getElementById('btnSaveFolderPath').addEventListener('click', () => {
+        const val = document.getElementById('gdriveFolderPath').value;
+        saveFolderPath(val);
+        document.getElementById('gdriveFolderPath').value = gdriveState.folderPath;
+        const label = gdriveState.folderPath ? `내 드라이브/${gdriveState.folderPath}` : '내 드라이브 최상위';
+        showToast(`저장 경로를 '${label}'(으)로 설정했습니다.`);
       });
 
       document.getElementById('btnGoogleLogin').addEventListener('click', startGoogleLogin);
@@ -2523,6 +2753,8 @@
       // Initialize
       const cidInput = document.getElementById('gdriveClientId');
       if (cidInput && gdriveState.clientId) cidInput.value = gdriveState.clientId;
+      const folderInput = document.getElementById('gdriveFolderPath');
+      if (folderInput) folderInput.value = gdriveState.folderPath;
       updateSyncUI();
       const verBadge = document.getElementById('btnVersionBadge');
       const verText = document.getElementById('appVersionText');

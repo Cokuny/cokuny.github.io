@@ -1,0 +1,2706 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#0f172a" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="내 차계부" />
+  <title>스마트 차계부(Smart Car Care)</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%230f172a'/%3E%3Cpath d='M16 38l4-12c1-3 3-4 6-4h12c3 0 5 1 6 4l4 12v10a2 2 0 0 1-2 2h-2a2 2 0 0 1-2-2v-2H22v2a2 2 0 0 1-2 2h-2a2 2 0 0 1-2-2V38zm6-10l-2 6h24l-2-6c-.4-1.2-1.2-2-2.5-2h-15c-1.3 0-2.1.8-2.5 2zm-.5 13a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5zm21 0a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5z' fill='%2338bdf8'/%3E%3C/svg%3E" />
+  <link rel="manifest" href="./manifest.json" />
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .animate-fade-in { animation: fadeIn 0.2s ease-out forwards; }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-900 min-h-screen pb-24 md:pb-10">
+
+  <!-- Top Header -->
+  <header class="bg-slate-900 text-white sticky top-0 z-30 shadow-md">
+    <div class="max-w-5xl mx-auto px-4 py-2.5 sm:py-3 flex items-center justify-between gap-2 sm:gap-3">
+      <div class="flex items-center gap-2.5 min-w-0">
+        <div class="w-9 h-9 rounded-xl bg-sky-500/20 border border-sky-400/30 flex items-center justify-center shrink-0">
+          <i data-lucide="car" class="w-5 h-5 text-sky-400"></i>
+        </div>
+        <div class="min-w-0">
+          <h1 id="appTitleText" class="text-base font-bold tracking-tight truncate">스마트 차계부</h1>
+          <div class="flex items-center gap-1.5 text-[11px] truncate">
+            <button id="btnVersionBadge" data-goto="backup" class="font-semibold text-sky-300 hover:text-sky-200 transition shrink-0" title="앱 버전 정보 보기">v1.7.3</button>
+            <span class="text-slate-400 truncate" id="headerSubtitle"></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="flex items-center justify-end gap-1.5 sm:gap-2 shrink-0">
+        <button id="btnLangToggle" class="inline-flex items-center gap-1 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 text-[11px] font-bold px-2 py-2 rounded-lg transition" title="한국어 / English 전환">
+          <i data-lucide="languages" class="w-3.5 h-3.5 text-sky-400"></i>
+          <span id="langToggleLabel">EN</span>
+        </button>
+        <button id="btnSyncHeader" class="inline-flex items-center justify-center bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-100 p-2 rounded-lg transition" title="Google 로그인 및 Drive 동기화" aria-label="Google 로그인">
+          <span id="headerSyncIconWrap" class="inline-flex items-center justify-center"><i id="headerSyncIcon" data-lucide="log-in" class="w-4 h-4 text-sky-400"></i></span>
+        </button>
+        <button id="btnOpenFuelModalTop" class="hidden sm:inline-flex items-center gap-1.5 bg-sky-500 hover:bg-sky-400 text-slate-950 font-semibold text-xs px-3 py-2 rounded-lg transition">
+          <i data-lucide="fuel" class="w-3.5 h-3.5"></i> <span data-i18n="addFuelBtn">주유 입력</span>
+        </button>
+        <button id="btnOpenMaintModalTop" class="hidden sm:inline-flex items-center gap-1.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-white font-medium text-xs px-3 py-2 rounded-lg transition">
+          <i data-lucide="wrench" class="w-3.5 h-3.5"></i> <span data-i18n="addMaintBtn">정비 입력</span>
+        </button>
+        <button id="btnOpenVehicleModal" class="inline-flex items-center gap-1 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 text-xs px-2.5 py-2 rounded-lg transition" title="차량 관리">
+          <i data-lucide="settings-2" class="w-4 h-4"></i>
+          <span class="hidden sm:inline" data-i18n="vehiclesBtn">차량 관리</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Vehicle Switcher Bar -->
+    <div class="bg-slate-950/60 border-t border-slate-800">
+      <div class="max-w-5xl mx-auto px-4 py-2 flex items-center gap-2 overflow-x-auto no-scrollbar" id="vehicleTabs"></div>
+    </div>
+  </header>
+
+  <!-- Desktop Navigation Tabs -->
+  <nav class="hidden md:block bg-white border-b border-slate-200 sticky top-[104px] z-20">
+    <div class="max-w-5xl mx-auto px-4 flex items-center gap-1" id="desktopNav">
+      <button data-tab="dashboard" class="nav-tab px-4 py-3 text-sm font-semibold border-b-2 transition flex items-center gap-2">
+        <i data-lucide="layout-dashboard" class="w-4 h-4"></i> <span data-i18n="navDashboard">대시보드</span>
+      </button>
+      <button data-tab="fuel" class="nav-tab px-4 py-3 text-sm font-semibold border-b-2 transition flex items-center gap-2">
+        <i data-lucide="fuel" class="w-4 h-4"></i> <span data-i18n="navFuel">주유 · 연비</span>
+      </button>
+      <button data-tab="maintenance" class="nav-tab px-4 py-3 text-sm font-semibold border-b-2 transition flex items-center gap-2">
+        <i data-lucide="wrench" class="w-4 h-4"></i> <span data-i18n="navMaint">정비 · 소모품</span>
+      </button>
+      <button data-tab="backup" class="nav-tab px-4 py-3 text-sm font-semibold border-b-2 transition flex items-center gap-2">
+        <i data-lucide="database" class="w-4 h-4"></i> <span data-i18n="navBackup">백업 · 내보내기</span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <main class="max-w-5xl mx-auto px-4 py-5 space-y-5">
+
+    <!-- Selected Vehicle Banner -->
+    <section id="vehicleBanner" class="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4"></section>
+
+    <!-- Tab: Dashboard -->
+    <section id="tab-dashboard" class="tab-panel space-y-5 animate-fade-in">
+      <!-- KPI Grid -->
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-3" id="kpiGrid"></div>
+
+      <!-- Quick Action Buttons (Mobile friendly) -->
+      <div class="grid grid-cols-2 gap-3 sm:hidden">
+        <button id="btnOpenFuelModalMobile" class="flex items-center justify-center gap-2 bg-sky-600 active:bg-sky-700 text-white font-semibold text-sm py-3 rounded-xl shadow-sm">
+          <i data-lucide="fuel" class="w-4 h-4"></i> 주유 기록 추가
+        </button>
+        <button id="btnOpenMaintModalMobile" class="flex items-center justify-center gap-2 bg-slate-800 active:bg-slate-900 text-white font-semibold text-sm py-3 rounded-xl shadow-sm">
+          <i data-lucide="wrench" class="w-4 h-4"></i> 정비 기록 추가
+        </button>
+      </div>
+
+      <!-- Charts Row -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <div class="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm">
+          <div class="flex items-center justify-between mb-3">
+            <h2 class="text-sm font-bold text-slate-800 flex items-center gap-1.5">
+              <i data-lucide="trending-up" class="w-4 h-4 text-sky-600"></i> <span data-i18n="chartEffTitle">연비 추이 (km/L)</span>
+            </h2>
+            <span class="text-xs text-slate-400" data-i18n="chartEffSub">가득 주유 기준</span>
+          </div>
+          <div class="relative h-60">
+            <canvas id="efficiencyChart"></canvas>
+            <div id="efficiencyChartEmpty" class="hidden absolute inset-0 flex flex-col items-center justify-center text-center p-4 text-slate-400 text-xs">
+              <i data-lucide="gauge" class="w-8 h-8 mb-2 text-slate-300"></i>
+              가득 주유 기록이 2건 이상 쌓이면<br />구간 연비 그래프가 자동으로 표시됩니다.
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm">
+          <div class="flex items-center justify-between mb-3">
+            <h2 class="text-sm font-bold text-slate-800 flex items-center gap-1.5">
+              <i data-lucide="bar-chart-3" class="w-4 h-4 text-indigo-600"></i> <span data-i18n="chartExpTitle">월별 지출 현황 (원)</span>
+            </h2>
+            <span class="text-xs text-slate-400" data-i18n="chartExpSub">주유비 + 정비비</span>
+          </div>
+          <div class="relative h-60">
+            <canvas id="expenseChart"></canvas>
+            <div id="expenseChartEmpty" class="hidden absolute inset-0 flex flex-col items-center justify-center text-center p-4 text-slate-400 text-xs">
+              <i data-lucide="wallet" class="w-8 h-8 mb-2 text-slate-300"></i>
+              주유나 정비 내역을 입력하면<br />월별 지출 내역을 한눈에 비교할 수 있습니다.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Recent Activity & Consumables Summary -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <div class="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm">
+          <div class="flex items-center justify-between mb-3">
+            <h2 class="text-sm font-bold text-slate-800" data-i18n="recentTitle">최근 기록</h2>
+            <button data-goto="fuel" class="text-xs font-medium text-sky-600 hover:text-sky-700" data-i18n="viewAll">전체 보기</button>
+          </div>
+          <div id="recentActivityList" class="divide-y divide-slate-100"></div>
+        </div>
+
+        <div class="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm">
+          <div class="flex items-center justify-between mb-3">
+            <h2 class="text-sm font-bold text-slate-800" data-i18n="consumablesTitle">주요 소모품 상태</h2>
+            <button data-goto="maintenance" class="text-xs font-medium text-sky-600 hover:text-sky-700" data-i18n="manageCycles">주기 관리</button>
+          </div>
+          <div id="dashboardConsumablesList" class="space-y-3"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Tab: Fuel -->
+    <section id="tab-fuel" class="tab-panel hidden space-y-4 animate-fade-in">
+      <div class="flex flex-wrap items-center justify-between gap-3 bg-white rounded-2xl border border-slate-200 p-4 shadow-sm">
+        <div>
+          <h2 class="text-base font-bold text-slate-900" data-i18n="fuelTabTitle">주유 및 연비 기록</h2>
+          <p class="text-xs text-slate-500 mt-0.5" data-i18n="fuelTabDesc">누적 주행거리와 주유량을 입력하면 직전 가득 주유 대비 연비가 자동 계산됩니다.</p>
+        </div>
+        <button id="btnAddFuelInTab" class="inline-flex items-center gap-1.5 bg-sky-600 hover:bg-sky-700 text-white text-sm font-semibold px-4 py-2.5 rounded-xl transition">
+          <i data-lucide="plus" class="w-4 h-4"></i> <span data-i18n="addFuelBtn">주유 추가</span>
+        </button>
+      </div>
+
+      <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+        <div class="p-3 border-b border-slate-100 flex flex-wrap items-center justify-between gap-2 bg-slate-50/60">
+          <div class="flex items-center gap-2">
+            <input type="month" id="fuelMonthFilter" class="text-xs border border-slate-200 rounded-lg px-2.5 py-1.5 bg-white text-slate-700" />
+            <button id="btnClearFuelFilter" class="text-xs text-slate-500 hover:text-slate-800 px-2 py-1">전체</button>
+          </div>
+          <span id="fuelSummaryBadge" class="text-xs font-medium text-slate-600"></span>
+        </div>
+        <div id="fuelListContainer" class="divide-y divide-slate-100"></div>
+      </div>
+    </section>
+
+    <!-- Tab: Maintenance & Consumables -->
+    <section id="tab-maintenance" class="tab-panel hidden space-y-5 animate-fade-in">
+      <!-- Consumables Tracker -->
+      <div class="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm space-y-3">
+        <div class="flex items-center justify-between">
+          <div>
+            <h2 class="text-base font-bold text-slate-900" data-i18n="consTabTitle">소모품 교체 주기 트래커</h2>
+            <p class="text-xs text-slate-500 mt-0.5">정비 내역에 해당 항목을 기록하면 마지막 교체 주행거리 기준으로 자동 계산됩니다.</p>
+          </div>
+        </div>
+        <div id="consumablesGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3"></div>
+      </div>
+
+      <!-- Maintenance History -->
+      <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+        <div class="p-4 border-b border-slate-100 flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <h2 class="text-base font-bold text-slate-900" data-i18n="maintTabTitle">정비 · 수리 이력</h2>
+            <p class="text-xs text-slate-500 mt-0.5" id="maintSummaryText">총 0건</p>
+          </div>
+          <div class="flex items-center gap-2">
+            <select id="maintCategoryFilter" class="text-xs border border-slate-200 rounded-lg px-2.5 py-2 bg-white text-slate-700">
+              <option value="ALL">전체 항목</option>
+            </select>
+            <button id="btnAddMaintInTab" class="inline-flex items-center gap-1.5 bg-slate-900 hover:bg-slate-800 text-white text-xs sm:text-sm font-semibold px-3.5 py-2 rounded-xl transition">
+              <i data-lucide="plus" class="w-4 h-4"></i> <span data-i18n="addMaintBtn">정비 추가</span>
+            </button>
+          </div>
+        </div>
+        <div id="maintListContainer" class="divide-y divide-slate-100"></div>
+      </div>
+    </section>
+
+    <!-- Tab: Backup & Export -->
+    <section id="tab-backup" class="tab-panel hidden space-y-4 animate-fade-in">
+      <!-- Google Drive Auto-Sync Card -->
+      <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm space-y-4">
+        <div class="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <h2 class="text-base font-bold text-slate-900 flex items-center gap-2">
+              <i data-lucide="cloud" class="w-5 h-5 text-sky-600"></i> <span data-i18n="driveSyncTitle">Google Drive 자동 동기화</span>
+            </h2>
+            <p class="text-xs text-slate-500 mt-1">Google 계정으로 로그인하면 <strong>내 드라이브</strong>의 지정 폴더에 백업 파일(<code>smart_car_logbook_sync.json</code>)을 직접 저장하고 동기화합니다.</p>
+          </div>
+          <span id="driveSyncBadge" class="text-[11px] font-semibold px-2.5 py-1 rounded-full bg-slate-100 text-slate-600">미연결</span>
+        </div>
+
+        <div class="bg-slate-50 border border-slate-200 rounded-xl p-3.5 space-y-2.5">
+          <label class="block text-xs font-semibold text-slate-700">Google OAuth 클라이언트 ID (GitHub Pages 등 HTTPS 도메인용)</label>
+          <div class="flex gap-2">
+            <input type="text" id="gdriveClientId" placeholder="예: 1234567890-xxxx.apps.googleusercontent.com" class="flex-1 border border-slate-300 rounded-xl px-3 py-2 text-xs bg-white outline-none focus:ring-2 focus:ring-sky-500" />
+            <button id="btnSaveClientId" class="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-900 text-white text-xs font-semibold shrink-0">저장</button>
+          </div>
+          <div class="pt-1">
+            <label class="block text-xs font-semibold text-slate-700 mb-1">Google Drive 저장 경로 (내 드라이브 기준 폴더)</label>
+            <div class="flex gap-2">
+              <input type="text" id="gdriveFolderPath" placeholder="예: 스마트차계부 또는 백업/차계부 (비우면 내 드라이브 최상위)" class="flex-1 border border-slate-300 rounded-xl px-3 py-2 text-xs bg-white outline-none focus:ring-2 focus:ring-sky-500" />
+              <button id="btnSaveFolderPath" class="px-3.5 py-2 rounded-xl bg-slate-700 hover:bg-slate-800 text-white text-xs font-semibold shrink-0">경로 저장</button>
+            </div>
+            <p class="text-[11px] text-slate-400 mt-1">슬래시(<code>/</code>)로 하위 폴더까지 지정할 수 있으며, 폴더가 없으면 자동으로 생성됩니다.</p>
+          </div>
+          <details class="text-[11px] text-slate-500 pt-1">
+            <summary class="cursor-pointer font-semibold text-sky-700 hover:underline">Google Cloud Console 설정 방법 보기</summary>
+            <ol class="list-decimal list-inside space-y-1 mt-2 text-slate-600 leading-relaxed">
+              <li>Google Cloud Console에서 프로젝트 생성 후 <strong>Google Drive API</strong>를 사용 설정합니다.</li>
+              <li><strong>API 및 서비스 → 사용자 인증 정보 → OAuth 클라이언트 ID 만들기</strong>(웹 애플리케이션)를 선택합니다.</li>
+              <li><strong>승인된 JavaScript 출처</strong>에 본인의 GitHub Pages 주소(예: <code>https://아이디.github.io</code>)를 등록합니다.</li>
+              <li>발급된 <strong>클라이언트 ID</strong>를 위 입력칸에 붙여넣고 저장한 뒤 로그인하세요.</li>
+            </ol>
+          </details>
+        </div>
+
+        <div id="driveUserBox" class="hidden flex items-center justify-between gap-3 bg-sky-50 border border-sky-200 rounded-xl px-4 py-3">
+          <div class="min-w-0">
+            <div class="text-xs font-bold text-sky-900 truncate" id="driveUserEmail">연결된 계정</div>
+            <div class="text-[11px] text-sky-700 mt-0.5" id="driveLastSyncText">동기화 대기 중</div>
+          </div>
+          <div class="flex items-center gap-2 shrink-0">
+            <button id="btnGoogleSyncNow" class="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-sky-600 hover:bg-sky-700 text-white text-xs font-semibold">
+              <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i> 지금 동기화
+            </button>
+            <button id="btnGoogleLogout" class="px-2.5 py-1.5 rounded-lg border border-sky-200 bg-white hover:bg-slate-50 text-slate-600 text-xs font-medium">로그아웃</button>
+          </div>
+        </div>
+
+        <div id="driveLoginBox">
+          <button id="btnGoogleLogin" class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-sky-600 hover:bg-sky-700 text-white text-sm font-semibold shadow-sm transition">
+            <i data-lucide="log-in" class="w-4 h-4"></i> Google 계정 로그인 및 자동 동기화 시작
+          </button>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm space-y-4">
+        <div>
+          <h2 class="text-base font-bold text-slate-900" data-i18n="backupTitle">데이터 백업 및 내보내기</h2>
+          <p class="text-xs text-slate-500 mt-1">모든 차계부 데이터는 현재 브라우저(LocalStorage)에 자동 저장됩니다. 기기를 바꾸거나 엑셀로 정리할 때 아래 기능을 이용하세요.</p>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <button id="btnExportFuelCsv" class="flex items-center gap-3 p-4 rounded-xl border border-slate-200 hover:border-sky-300 hover:bg-sky-50/40 text-left transition">
+            <div class="w-10 h-10 rounded-xl bg-sky-100 text-sky-700 flex items-center justify-center shrink-0">
+              <i data-lucide="file-spreadsheet" class="w-5 h-5"></i>
+            </div>
+            <div>
+              <div class="text-sm font-semibold text-slate-800">주유 내역 CSV 내보내기</div>
+              <div class="text-xs text-slate-500">선택 차량의 주유·연비 기록 (엑셀 호환)</div>
+            </div>
+          </button>
+
+          <button id="btnExportMaintCsv" class="flex items-center gap-3 p-4 rounded-xl border border-slate-200 hover:border-indigo-300 hover:bg-indigo-50/40 text-left transition">
+            <div class="w-10 h-10 rounded-xl bg-indigo-100 text-indigo-700 flex items-center justify-center shrink-0">
+              <i data-lucide="file-text" class="w-5 h-5"></i>
+            </div>
+            <div>
+              <div class="text-sm font-semibold text-slate-800">정비 내역 CSV 내보내기</div>
+              <div class="text-xs text-slate-500">선택 차량의 정비·소모품 기록 (엑셀 호환)</div>
+            </div>
+          </button>
+
+          <button id="btnExportJson" class="flex items-center gap-3 p-4 rounded-xl border border-slate-200 hover:border-emerald-300 hover:bg-emerald-50/40 text-left transition">
+            <div class="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center shrink-0">
+              <i data-lucide="download" class="w-5 h-5"></i>
+            </div>
+            <div>
+              <div class="text-sm font-semibold text-slate-800">전체 데이터 JSON 백업</div>
+              <div class="text-xs text-slate-500">모든 차량 및 기록 전체 저장</div>
+            </div>
+          </button>
+
+          <label class="flex items-center gap-3 p-4 rounded-xl border border-slate-200 hover:border-amber-300 hover:bg-amber-50/40 text-left transition cursor-pointer">
+            <div class="w-10 h-10 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center shrink-0">
+              <i data-lucide="upload" class="w-5 h-5"></i>
+            </div>
+            <div>
+              <div class="text-sm font-semibold text-slate-800">JSON 백업 불러오기</div>
+              <div class="text-xs text-slate-500">저장한 백업 파일로 복원</div>
+            </div>
+            <input type="file" id="inputImportJson" accept=".json" class="hidden" />
+          </label>
+        </div>
+
+        <div class="pt-3 border-t border-slate-100 flex flex-wrap items-center justify-between gap-3">
+          <button id="btnLoadSample" class="inline-flex items-center gap-1.5 text-xs font-medium text-slate-600 hover:text-sky-700 bg-slate-100 hover:bg-sky-50 px-3 py-2 rounded-lg transition">
+            <i data-lucide="sparkles" class="w-3.5 h-3.5"></i> 체험용 샘플 데이터 채우기
+          </button>
+          <button id="btnResetAll" class="inline-flex items-center gap-1.5 text-xs font-medium text-rose-600 hover:text-rose-700 bg-rose-50 hover:bg-rose-100 px-3 py-2 rounded-lg transition">
+            <i data-lucide="trash-2" class="w-3.5 h-3.5"></i> 모든 데이터 초기화
+          </button>
+        </div>
+      </div>
+
+      <!-- App Version & Info -->
+      <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm space-y-3" id="appVersionCard">
+        <div class="flex items-center justify-between gap-2">
+          <h3 class="text-sm font-bold text-slate-900 flex items-center gap-2">
+            <i data-lucide="info" class="w-4 h-4 text-sky-600"></i> <span data-i18n="appInfoTitle">앱 정보 및 버전</span>
+          </h3>
+          <span id="appVersionText" class="text-xs font-bold px-2.5 py-1 rounded-full bg-sky-50 text-sky-700 border border-sky-200">v1.0.0</span>
+        </div>
+        <div class="text-xs text-slate-600 space-y-1.5 bg-slate-50 rounded-xl p-3.5 border border-slate-100">
+          <div class="flex items-center justify-between">
+            <span class="font-semibold text-slate-800" data-i18n="appInfoName">스마트 차계부 (PWA)</span>
+            <span class="text-slate-400">릴리스 2026.11.22</span>
+          </div>
+          <ul class="list-disc list-inside space-y-1 text-slate-500 pt-1">
+            <li>웹앱 제목을 스마트 차계부(Smart Car Care)로 변경 (v1.6.2)</li>
+            <li>재로그인 및 다른 기기 로그인 시 권한 동의 창 생략 개선 (v1.6.1)</li>
+            <li>로컬 사용자 계정 제거 및 상단 Google 로그인 통합 (v1.7.0)</li>
+            <li>초기 실행 시 빈 차고로 시작 · 로그인 시 Drive 데이터 자동 불러오기 (v1.6.0)</li>
+            <li>모바일 상단 헤더 2줄 배치로 앱 제목 가독성 개선 (v1.5.1)</li>
+            <li>Google 로그인 세션 유지 · 자동 연장 및 원클릭 재연결 지원 (v1.5.0)</li>
+            <li>기본 Google OAuth 클라이언트 ID 내장 적용 (v1.4.1)</li>
+            <li>한국어 / 영어(Smart Car Care) 다국어 전환 지원 (v1.4.0)</li>
+            <li>내 드라이브 직접 저장 및 사용자 지정 폴더 경로 설정 지원 (v1.3.0)</li>
+            <li>Google Drive 2단계 안정화 저장 · 15초 타임아웃 적용 (v1.2.0)</li>
+            <li>Google 계정 로그인 및 Google Drive 자동 동기화 지원 (v1.1.0)</li>
+            <li>차량별 브랜드 선택 목록, 로고 및 주행거리 관리</li>
+            <li>가득 주유 기준 구간 연비 자동 계산 및 월별 지출 차트</li>
+            <li>정비 이력, 소모품 교체 주기 트래커, 다중 계정 및 CSV · JSON 백업</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- PWA Install Tip -->
+      <div class="bg-slate-900 text-slate-100 rounded-2xl p-5 shadow-sm">
+        <h3 class="text-sm font-bold flex items-center gap-2 mb-1.5">
+          <i data-lucide="smartphone" class="w-4 h-4 text-sky-400"></i> 스마트폰 홈 화면에 앱처럼 추가하기
+        </h3>
+        <p class="text-xs text-slate-300 leading-relaxed">
+          이 HTML 파일을 스마트폰 브라우저(Safari 또는 Chrome)로 연 뒤 <strong>공유 → 홈 화면에 추가</strong>를 선택하면 앱 아이콘이 생성되어 오프라인에서도 바로 차계부를 기록할 수 있습니다.
+        </p>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Mobile Bottom Navigation -->
+  <nav class="md:hidden fixed bottom-0 inset-x-0 bg-white border-t border-slate-200 z-30 flex justify-around items-center py-1.5 px-2 shadow-lg" id="mobileNav">
+    <button data-tab="dashboard" class="mob-tab flex flex-col items-center gap-0.5 py-1 px-3 text-[11px] font-medium">
+      <i data-lucide="layout-dashboard" class="w-5 h-5"></i><span data-i18n="navDashboard">대시보드</span>
+    </button>
+    <button data-tab="fuel" class="mob-tab flex flex-col items-center gap-0.5 py-1 px-3 text-[11px] font-medium">
+      <i data-lucide="fuel" class="w-5 h-5"></i><span data-i18n="navFuelShort">주유·연비</span>
+    </button>
+    <button data-tab="maintenance" class="mob-tab flex flex-col items-center gap-0.5 py-1 px-3 text-[11px] font-medium">
+      <i data-lucide="wrench" class="w-5 h-5"></i><span data-i18n="navMaintShort">정비·소모품</span>
+    </button>
+    <button data-tab="backup" class="mob-tab flex flex-col items-center gap-0.5 py-1 px-3 text-[11px] font-medium">
+      <i data-lucide="database" class="w-5 h-5"></i><span data-i18n="navBackupShort">백업</span>
+    </button>
+  </nav>
+
+  <!-- Modal: Fuel Entry -->
+  <div id="fuelModal" class="hidden fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4">
+    <div class="bg-white w-full sm:max-w-md rounded-t-2xl sm:rounded-2xl shadow-xl overflow-hidden animate-fade-in">
+      <div class="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
+        <h3 class="text-base font-bold text-slate-900" id="fuelModalTitle">주유 기록 추가</h3>
+        <button data-close-modal="fuelModal" class="text-slate-400 hover:text-slate-700 p-1"><i data-lucide="x" class="w-5 h-5"></i></button>
+      </div>
+      <form id="fuelForm" class="p-5 space-y-3.5 max-h-[80vh] overflow-y-auto">
+        <input type="hidden" id="fuelEditId" />
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">날짜</label>
+            <input type="date" id="fuelDate" required class="w-full border border-slate-300 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-sky-500 focus:border-sky-500 outline-none" />
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">누적 주행거리 (km)</label>
+            <input type="number" id="fuelOdo" min="0" step="1" required placeholder="예: 84250" class="w-full border border-slate-300 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-sky-500 focus:border-sky-500 outline-none" />
+          </div>
+        </div>
+        <div class="grid grid-cols-3 gap-2.5">
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">주유량 (L)</label>
+            <input type="number" id="fuelLiters" min="0.1" step="0.01" required placeholder="45.5" class="w-full border border-slate-300 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-sky-500 focus:border-sky-500 outline-none" />
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">단가 (원/L)</label>
+            <input type="number" id="fuelUnitPrice" min="0" step="1" placeholder="1650" class="w-full border border-slate-300 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-sky-500 focus:border-sky-500 outline-none" />
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">총 금액 (원)</label>
+            <input type="number" id="fuelTotalCost" min="0" step="10" required placeholder="75000" class="w-full border border-slate-300 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-sky-500 focus:border-sky-500 outline-none" />
+          </div>
+        </div>
+        <div id="fuelPreviewBox" class="bg-sky-50 border border-sky-100 rounded-xl px-3 py-2 text-xs text-sky-800 hidden"></div>
+        <label class="flex items-center gap-2.5 cursor-pointer py-1">
+          <input type="checkbox" id="fuelIsFull" checked class="w-4 h-4 rounded text-sky-600 focus:ring-sky-500" />
+          <span class="text-sm text-slate-700 font-medium">가득 주유 (Full) — 정확한 연비 계산 기준</span>
+        </label>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">주유소 (선택)</label>
+            <input type="text" id="fuelStation" placeholder="예: SK 직영주유소" class="w-full border border-slate-300 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-sky-500 outline-none" />
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">메모 (선택)</label>
+            <input type="text" id="fuelMemo" placeholder="고속도로 주행 등" class="w-full border border-slate-300 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-sky-500 outline-none" />
+          </div>
+        </div>
+        <div class="pt-2 flex gap-2">
+          <button type="button" data-close-modal="fuelModal" class="flex-1 py-2.5 rounded-xl border border-slate-200 text-slate-600 font-semibold text-sm hover:bg-slate-50">취소</button>
+          <button type="submit" class="flex-1 py-2.5 rounded-xl bg-sky-600 hover:bg-sky-700 text-white font-semibold text-sm shadow-sm">저장하기</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Maintenance Entry -->
+  <div id="maintModal" class="hidden fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4">
+    <div class="bg-white w-full sm:max-w-md rounded-t-2xl sm:rounded-2xl shadow-xl overflow-hidden animate-fade-in">
+      <div class="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
+        <h3 class="text-base font-bold text-slate-900" id="maintModalTitle">정비 기록 추가</h3>
+        <button data-close-modal="maintModal" class="text-slate-400 hover:text-slate-700 p-1"><i data-lucide="x" class="w-5 h-5"></i></button>
+      </div>
+      <form id="maintForm" class="p-5 space-y-3.5 max-h-[80vh] overflow-y-auto">
+        <input type="hidden" id="maintEditId" />
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">날짜</label>
+            <input type="date" id="maintDate" required class="w-full border border-slate-300 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-sky-500 outline-none" />
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">누적 주행거리 (km)</label>
+            <input type="number" id="maintOdo" min="0" step="1" required placeholder="예: 84500" class="w-full border border-slate-300 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-sky-500 outline-none" />
+          </div>
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">정비 항목</label>
+            <select id="maintCategory" class="w-full border border-slate-300 rounded-xl px-3 py-2 text-sm bg-white focus:ring-2 focus:ring-sky-500 outline-none"></select>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">정비 비용 (원)</label>
+            <input type="number" id="maintCost" min="0" step="100" required placeholder="150000" class="w-full border border-slate-300 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-sky-500 outline-none" />
+          </div>
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">정비소 / 업체명 (선택)</label>
+          <input type="text" id="maintShop" placeholder="예: 공식 서비스센터 / 수입차 전문점" class="w-full border border-slate-300 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-sky-500 outline-none" />
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">상세 내용 / 메모 (선택)</label>
+          <textarea id="maintMemo" rows="2" placeholder="교체 부품명, 오일 규격 등" class="w-full border border-slate-300 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-sky-500 outline-none resize-none"></textarea>
+        </div>
+        <div class="pt-2 flex gap-2">
+          <button type="button" data-close-modal="maintModal" class="flex-1 py-2.5 rounded-xl border border-slate-200 text-slate-600 font-semibold text-sm hover:bg-slate-50">취소</button>
+          <button type="submit" class="flex-1 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-semibold text-sm shadow-sm">저장하기</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Vehicle Manager -->
+  <div id="vehicleModal" class="hidden fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4">
+    <div class="bg-white w-full sm:max-w-lg rounded-t-2xl sm:rounded-2xl shadow-xl overflow-hidden animate-fade-in">
+      <div class="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
+        <h3 class="text-base font-bold text-slate-900">보유 차량 관리</h3>
+        <button data-close-modal="vehicleModal" class="text-slate-400 hover:text-slate-700 p-1"><i data-lucide="x" class="w-5 h-5"></i></button>
+      </div>
+      <div class="p-5 space-y-4 max-h-[80vh] overflow-y-auto">
+        <div id="vehicleManagerList" class="space-y-2.5"></div>
+
+        <form id="vehicleForm" class="pt-4 border-t border-slate-200 space-y-3">
+          <h4 class="text-xs font-bold text-slate-500 uppercase tracking-wider" id="vehicleFormTitle">새 차량 추가</h4>
+          <input type="hidden" id="vehicleEditId" />
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 mb-1">브랜드</label>
+              <select id="vBrand" class="w-full border border-slate-300 rounded-xl px-3 py-2 text-sm bg-white outline-none focus:ring-2 focus:ring-sky-500"></select>
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 mb-1">차량명 (모델)</label>
+              <input type="text" id="vName" required placeholder="예: 2016 BMW 5GT" class="w-full border border-slate-300 rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-sky-500" />
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 mb-1">차량번호 (선택)</label>
+              <input type="text" id="vPlate" placeholder="예: 12가 3456" class="w-full border border-slate-300 rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-sky-500" />
+            </div>
+          </div>
+          <div class="grid grid-cols-3 gap-2.5">
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 mb-1">연식</label>
+              <input type="number" id="vYear" min="1990" max="2030" required value="2020" class="w-full border border-slate-300 rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-sky-500" />
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 mb-1">유종</label>
+              <select id="vFuelType" class="w-full border border-slate-300 rounded-xl px-3 py-2 text-sm bg-white outline-none focus:ring-2 focus:ring-sky-500">
+                <option value="디젤">디젤</option>
+                <option value="가솔린">가솔린</option>
+                <option value="하이브리드">하이브리드</option>
+                <option value="LPG">LPG</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 mb-1">현재 주행거리(km)</label>
+              <input type="number" id="vOdo" min="0" step="1" required value="0" class="w-full border border-slate-300 rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-sky-500" />
+            </div>
+          </div>
+          <div class="flex gap-2">
+            <button type="button" id="btnCancelVehicleEdit" class="hidden px-4 py-2 rounded-xl border border-slate-200 text-xs font-semibold text-slate-600">취소</button>
+            <button type="submit" class="flex-1 py-2.5 rounded-xl bg-sky-600 hover:bg-sky-700 text-white text-sm font-semibold">차량 저장</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Sync Conflict -->
+  <div id="syncConflictModal" class="hidden fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4">
+    <div class="bg-white w-full max-w-md rounded-2xl shadow-xl p-5 space-y-4 animate-fade-in">
+      <div class="flex items-start gap-3">
+        <div class="w-10 h-10 rounded-full bg-sky-100 text-sky-600 flex items-center justify-center shrink-0">
+          <i data-lucide="cloud" class="w-5 h-5"></i>
+        </div>
+        <div>
+          <h3 class="text-base font-bold text-slate-900">Google Drive 데이터 발견</h3>
+          <p class="text-xs text-slate-600 mt-1 leading-relaxed" id="syncConflictMsg"></p>
+        </div>
+      </div>
+      <div class="flex flex-col sm:flex-row gap-2">
+        <button id="btnUseDriveData" class="flex-1 px-4 py-2.5 rounded-xl bg-sky-600 hover:bg-sky-700 text-white text-xs font-semibold">Drive 데이터 불러오기</button>
+        <button id="btnUseLocalData" class="flex-1 px-4 py-2.5 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-semibold">현재 기기 데이터 유지</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Custom Confirm -->
+  <div id="confirmModal" class="hidden fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4">
+    <div class="bg-white w-full max-w-sm rounded-2xl shadow-xl p-5 space-y-4 animate-fade-in">
+      <div class="flex items-start gap-3">
+        <div class="w-10 h-10 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center shrink-0">
+          <i data-lucide="alert-triangle" class="w-5 h-5"></i>
+        </div>
+        <div>
+          <h3 class="text-base font-bold text-slate-900" id="confirmTitle">확인</h3>
+          <p class="text-xs text-slate-600 mt-1 leading-relaxed" id="confirmMessage"></p>
+        </div>
+      </div>
+      <div class="flex gap-2 justify-end">
+        <button id="btnConfirmCancel" class="px-4 py-2 rounded-xl border border-slate-200 text-xs font-semibold text-slate-600 hover:bg-slate-50">취소</button>
+        <button id="btnConfirmOk" class="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold">확인</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div id="toast" class="hidden fixed bottom-20 md:bottom-6 left-1/2 -translate-x-1/2 z-50 bg-slate-900 text-white text-xs font-medium px-4 py-2.5 rounded-full shadow-lg flex items-center gap-2">
+    <i data-lucide="check-circle-2" class="w-4 h-4 text-emerald-400"></i>
+    <span id="toastMsg"></span>
+  </div>
+
+  <script>
+    (function () {
+      'use strict';
+
+      const APP_VERSION = 'v1.7.4';
+      const DEFAULT_GDRIVE_CLIENT_ID = '126554316010-1v3tt4ff6pjchimdlfschr7rs6or48tg.apps.googleusercontent.com';
+      const LANG_STORAGE_KEY = 'smart_car_logbook_lang';
+      let currentLang = loadLang();
+
+      function loadLang() {
+        try {
+          const v = localStorage.getItem(LANG_STORAGE_KEY);
+          return v === 'en' ? 'en' : 'ko';
+        } catch (e) {
+          return 'ko';
+        }
+      }
+
+      function saveLang(lang) {
+        currentLang = lang;
+        try {
+          localStorage.setItem(LANG_STORAGE_KEY, lang);
+        } catch (e) {}
+      }
+
+      const I18N = {
+        ko: {
+          appName: '스마트 차계부',
+          appInfoName: '스마트 차계부 (PWA)',
+          toggleLabel: 'EN',
+          addFuelBtn: '주유 입력',
+          addMaintBtn: '정비 입력',
+          vehiclesBtn: '차량 관리',
+          navDashboard: '대시보드',
+          navFuel: '주유 · 연비',
+          navMaint: '정비 · 소모품',
+          navBackup: '백업 · 내보내기',
+          navFuelShort: '주유·연비',
+          navMaintShort: '정비·소모품',
+          navBackupShort: '백업',
+          chartEffTitle: '연비 추이 (km/L)',
+          chartEffSub: '가득 주유 기준',
+          chartExpTitle: '월별 지출 현황 (원)',
+          chartExpSub: '주유비 + 정비비',
+          recentTitle: '최근 기록',
+          viewAll: '전체 보기',
+          consumablesTitle: '주요 소모품 상태',
+          manageCycles: '주기 관리',
+          fuelTabTitle: '주유 및 연비 기록',
+          fuelTabDesc: '누적 주행거리와 주유량을 입력하면 직전 가득 주유 대비 연비가 자동 계산됩니다.',
+          consTabTitle: '소모품 교체 주기 트래커',
+          maintTabTitle: '정비 · 수리 이력',
+          driveSyncTitle: 'Google Drive 자동 동기화',
+          backupTitle: '데이터 백업 및 내보내기',
+          appInfoTitle: '앱 정보 및 버전',
+          kpiAvgEff: '평균 연비',
+          kpiTotalFuel: '누적 주유비',
+          kpiTotalMaint: '누적 정비비',
+          kpiTotalSpend: '총 차량 유지비',
+          curOdo: '현재 누적 주행거리',
+          currencyUnit: '원',
+          syncIdle: '동기화',
+          syncConnected: 'Drive 연결됨',
+          syncing: '동기화 중',
+          statusGood: '양호',
+          statusDue: '점검 권장',
+          statusOverdue: '교체 필요',
+          statusNone: '기록 없음'
+        },
+        en: {
+          appName: 'Smart Car Care',
+          appInfoName: 'Smart Car Care (PWA)',
+          toggleLabel: '한국어',
+          addFuelBtn: 'Add Fuel',
+          addMaintBtn: 'Add Service',
+          vehiclesBtn: 'Vehicles',
+          navDashboard: 'Dashboard',
+          navFuel: 'Fuel & Economy',
+          navMaint: 'Service & Parts',
+          navBackup: 'Backup & Sync',
+          navFuelShort: 'Fuel',
+          navMaintShort: 'Service',
+          navBackupShort: 'Backup',
+          chartEffTitle: 'Fuel Economy Trend (km/L)',
+          chartEffSub: 'Full-to-Full',
+          chartExpTitle: 'Monthly Expenses (KRW)',
+          chartExpSub: 'Fuel + Service',
+          recentTitle: 'Recent Activity',
+          viewAll: 'View All',
+          consumablesTitle: 'Consumables Status',
+          manageCycles: 'Manage',
+          fuelTabTitle: 'Fuel & Economy Log',
+          fuelTabDesc: 'Enter odometer and fuel volume to automatically calculate km/L between full tanks.',
+          consTabTitle: 'Consumable Replacement Tracker',
+          maintTabTitle: 'Service & Repair History',
+          driveSyncTitle: 'Google Drive Auto-Sync',
+          backupTitle: 'Backup & Export',
+          appInfoTitle: 'App Info & Version',
+          kpiAvgEff: 'Avg Efficiency',
+          kpiTotalFuel: 'Total Fuel Cost',
+          kpiTotalMaint: 'Total Service Cost',
+          kpiTotalSpend: 'Total Spend',
+          curOdo: 'Current Odometer',
+          currencyUnit: 'KRW',
+          syncIdle: 'Sync',
+          syncConnected: 'Drive Synced',
+          syncing: 'Syncing',
+          statusGood: 'Good',
+          statusDue: 'Due Soon',
+          statusOverdue: 'Overdue',
+          statusNone: 'No record'
+        }
+      };
+
+      function t(key) {
+        return (I18N[currentLang] && I18N[currentLang][key]) || (I18N.ko[key]) || key;
+      }
+
+      function applyLanguage() {
+        document.documentElement.lang = currentLang;
+        document.title = currentLang === 'en' ? 'Smart Car Care' : '스마트 차계부(Smart Car Care)';
+        const titleEl = document.getElementById('appTitleText');
+        if (titleEl) titleEl.textContent = t('appName');
+        const toggleLabel = document.getElementById('langToggleLabel');
+        if (toggleLabel) toggleLabel.textContent = t('toggleLabel');
+        document.querySelectorAll('[data-i18n]').forEach(el => {
+          const k = el.getAttribute('data-i18n');
+          if (k) el.textContent = t(k);
+        });
+      }
+      const LEGACY_STORAGE_KEY = 'smart_car_logbook_v1';
+      const V2_STORAGE_KEY = 'smart_car_logbook_v2';
+      const STORAGE_KEY = 'smart_car_logbook_v3';
+      const GDRIVE_CLIENT_ID_KEY = 'smart_car_logbook_gdrive_client_id';
+      const GDRIVE_FOLDER_PATH_KEY = 'smart_car_logbook_gdrive_folder';
+      const GDRIVE_SESSION_KEY = 'smart_car_logbook_gdrive_session';
+      const GDRIVE_SYNC_FILENAME = 'smart_car_logbook_sync.json';
+      const GDRIVE_SCOPES = 'https://www.googleapis.com/auth/drive.file https://www.googleapis.com/auth/userinfo.email';
+
+      const CAR_BRANDS = [
+        { id: 'BMW', label: 'BMW' },
+        { id: 'Audi', label: '아우디 (Audi)' },
+        { id: 'Benz', label: '메르세데스-벤츠 (Benz)' },
+        { id: 'Hyundai', label: '현대 (Hyundai)' },
+        { id: 'Kia', label: '기아 (Kia)' },
+        { id: 'Genesis', label: '제네시스 (Genesis)' },
+        { id: 'Volkswagen', label: '폭스바겐 (VW)' },
+        { id: 'Volvo', label: '볼보 (Volvo)' },
+        { id: 'Porsche', label: '포르쉐 (Porsche)' },
+        { id: 'Tesla', label: '테슬라 (Tesla)' },
+        { id: 'Lexus', label: '렉서스 (Lexus)' },
+        { id: 'Toyota', label: '토요타 (Toyota)' },
+        { id: 'Honda', label: '혼다 (Honda)' },
+        { id: 'MINI', label: '미니 (MINI)' },
+        { id: 'LandRover', label: '랜드로버 (Land Rover)' },
+        { id: 'Chevrolet', label: '쉐보레 (Chevrolet)' },
+        { id: 'Renault', label: '르노코리아 (Renault)' },
+        { id: 'KGM', label: 'KGM (KG모빌리티)' },
+        { id: 'Other', label: '기타 브랜드' }
+      ];
+
+      const MAINT_CATEGORIES = [
+        { id: '엔진오일', label: '엔진오일 / 필터', intervalKm: 10000 },
+        { id: '에어컨필터', label: '에어컨 필터', intervalKm: 15000 },
+        { id: '브레이크오일', label: '브레이크 오일', intervalKm: 40000 },
+        { id: '브레이크패드', label: '브레이크 패드/디스크', intervalKm: 40000 },
+        { id: '타이어', label: '타이어 교체/위치교환', intervalKm: 20000 },
+        { id: '미션오일', label: '미션오일 / 디퍼런셜', intervalKm: 60000 },
+        { id: '배터리', label: '배터리 교체', intervalKm: 50000 },
+        { id: '와이퍼', label: '와이퍼 블레이드', intervalKm: 15000 },
+        { id: '정기검사', label: '자동차 정기검사', intervalKm: null },
+        { id: '세차·외장', label: '세차 / 디테일링', intervalKm: null },
+        { id: '기타정비', label: '기타 정비 / 수리', intervalKm: null }
+      ];
+
+      const DEFAULT_STATE = {
+        activeVehicleId: null,
+        activeTab: 'dashboard',
+        vehicles: [],
+        fuelLogs: [],
+        maintLogs: []
+      };
+
+      let state = loadState();
+      let efficiencyChartInstance = null;
+      let expenseChartInstance = null;
+      let confirmCallback = null;
+
+      function sanitizeStateData(parsed) {
+        if (!parsed) return JSON.parse(JSON.stringify(DEFAULT_STATE));
+        // Support migrating v2 multi-account format (from localStorage or Drive backup)
+        if (Array.isArray(parsed.accounts) && parsed.accounts.length) {
+          const activeAcc = parsed.accounts.find(a => a.id === parsed.activeAccountId) || parsed.accounts[0];
+          return sanitizeStateData(activeAcc && activeAcc.data ? activeAcc.data : null);
+        }
+        if (!Array.isArray(parsed.vehicles)) {
+          return JSON.parse(JSON.stringify(DEFAULT_STATE));
+        }
+        return {
+          updatedAt: parsed.updatedAt || null,
+          activeVehicleId: parsed.vehicles.length ? (parsed.activeVehicleId || parsed.vehicles[0].id) : null,
+          activeTab: parsed.activeTab || 'dashboard',
+          vehicles: parsed.vehicles,
+          fuelLogs: Array.isArray(parsed.fuelLogs) ? parsed.fuelLogs : [],
+          maintLogs: Array.isArray(parsed.maintLogs) ? parsed.maintLogs : []
+        };
+      }
+
+      function loadState() {
+        try {
+          const raw = localStorage.getItem(STORAGE_KEY);
+          if (raw) return sanitizeStateData(JSON.parse(raw));
+          const v2Raw = localStorage.getItem(V2_STORAGE_KEY);
+          if (v2Raw) return sanitizeStateData(JSON.parse(v2Raw));
+          const v1Raw = localStorage.getItem(LEGACY_STORAGE_KEY);
+          if (v1Raw) return sanitizeStateData(JSON.parse(v1Raw));
+          return JSON.parse(JSON.stringify(DEFAULT_STATE));
+        } catch (e) {
+          return JSON.parse(JSON.stringify(DEFAULT_STATE));
+        }
+      }
+
+      let gdriveState = {
+        clientId: loadClientId(),
+        folderPath: loadFolderPath(),
+        driveFolderId: null,
+        accessToken: null,
+        expiresAt: 0,
+        wasLoggedIn: false,
+        userEmail: null,
+        driveFileId: null,
+        lastSyncAt: null,
+        syncing: false,
+        pendingRemotePayload: null
+      };
+      let syncDebounceTimer = null;
+      let tokenRefreshTimer = null;
+
+      function loadDriveSession() {
+        try {
+          const raw = localStorage.getItem(GDRIVE_SESSION_KEY);
+          if (!raw) return;
+          const s = JSON.parse(raw);
+          gdriveState.wasLoggedIn = !!s.wasLoggedIn;
+          gdriveState.userEmail = s.userEmail || null;
+          gdriveState.driveFileId = s.driveFileId || null;
+          gdriveState.driveFolderId = s.driveFolderId || null;
+          if (s.accessToken && s.expiresAt && Date.now() < Number(s.expiresAt) - 60000) {
+            gdriveState.accessToken = s.accessToken;
+            gdriveState.expiresAt = Number(s.expiresAt);
+          }
+        } catch (e) {}
+      }
+
+      function saveDriveSession() {
+        try {
+          localStorage.setItem(GDRIVE_SESSION_KEY, JSON.stringify({
+            wasLoggedIn: gdriveState.wasLoggedIn,
+            accessToken: gdriveState.accessToken,
+            expiresAt: gdriveState.expiresAt,
+            userEmail: gdriveState.userEmail,
+            driveFileId: gdriveState.driveFileId,
+            driveFolderId: gdriveState.driveFolderId
+          }));
+        } catch (e) {}
+      }
+
+      function clearDriveSession() {
+        clearTimeout(tokenRefreshTimer);
+        gdriveState.accessToken = null;
+        gdriveState.expiresAt = 0;
+        gdriveState.wasLoggedIn = false;
+        gdriveState.userEmail = null;
+        gdriveState.driveFileId = null;
+        gdriveState.driveFolderId = null;
+        gdriveState.lastSyncAt = null;
+        try {
+          localStorage.removeItem(GDRIVE_SESSION_KEY);
+        } catch (e) {}
+      }
+
+      function scheduleTokenRefresh() {
+        clearTimeout(tokenRefreshTimer);
+        if (!gdriveState.accessToken || !gdriveState.expiresAt) return;
+        const delay = Math.max(30000, gdriveState.expiresAt - Date.now() - 300000);
+        tokenRefreshTimer = setTimeout(() => {
+          if (gdriveState.wasLoggedIn) startGoogleLogin(true);
+        }, delay);
+      }
+
+      function loadClientId() {
+        try {
+          return localStorage.getItem(GDRIVE_CLIENT_ID_KEY) || DEFAULT_GDRIVE_CLIENT_ID;
+        } catch (e) {
+          return DEFAULT_GDRIVE_CLIENT_ID;
+        }
+      }
+
+      function loadFolderPath() {
+        try {
+          const v = localStorage.getItem(GDRIVE_FOLDER_PATH_KEY);
+          return v === null ? '스마트차계부' : v;
+        } catch (e) {
+          return '스마트차계부';
+        }
+      }
+
+      function saveFolderPath(val) {
+        const cleaned = String(val || '')
+          .split('/')
+          .map(s => s.trim())
+          .filter(Boolean)
+          .join('/');
+        gdriveState.folderPath = cleaned;
+        gdriveState.driveFolderId = null;
+        gdriveState.driveFileId = null;
+        try {
+          localStorage.setItem(GDRIVE_FOLDER_PATH_KEY, cleaned);
+        } catch (e) {}
+      }
+
+      function saveClientId(val) {
+        gdriveState.clientId = val;
+        try {
+          localStorage.setItem(GDRIVE_CLIENT_ID_KEY, val);
+        } catch (e) {}
+      }
+
+      function saveState(skipCloudSync) {
+        state.updatedAt = new Date().toISOString();
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+        } catch (e) {
+          // Storage unavailable in restricted mode; keep in-memory
+        }
+        if (!skipCloudSync && gdriveState.accessToken) {
+          clearTimeout(syncDebounceTimer);
+          syncDebounceTimer = setTimeout(() => {
+            uploadToDrive(true);
+          }, 1200);
+        }
+      }
+
+      function updateSyncUI(statusText, isError) {
+        const badge = document.getElementById('driveSyncBadge');
+        const userBox = document.getElementById('driveUserBox');
+        const loginBox = document.getElementById('driveLoginBox');
+        const emailEl = document.getElementById('driveUserEmail');
+        const lastEl = document.getElementById('driveLastSyncText');
+        const hdrBtn = document.getElementById('btnSyncHeader');
+        const hdrIconWrap = document.getElementById('headerSyncIconWrap');
+        const googleG = `<svg id="headerSyncIcon" class="w-4 h-4" viewBox="0 0 24 24" aria-hidden="true"><path fill="#4285F4" d="M23.5 12.3c0-.8-.1-1.6-.2-2.3H12v4.5h6.5c-.3 1.5-1.1 2.8-2.4 3.6v3h3.9c2.3-2.1 3.5-5.2 3.5-8.8z"/><path fill="#34A853" d="M12 24c3.2 0 6-1.1 8-2.9l-3.9-3c-1.1.7-2.5 1.2-4.1 1.2-3.2 0-5.9-2.1-6.8-5H1.2v3.1C3.2 21.4 7.3 24 12 24z"/><path fill="#FBBC05" d="M5.2 14.3c-.2-.7-.4-1.5-.4-2.3s.1-1.6.4-2.3V6.6H1.2C.4 8.2 0 10.1 0 12s.4 3.8 1.2 5.4l4-3.1z"/><path fill="#EA4335" d="M12 4.8c1.8 0 3.4.6 4.6 1.8l3.5-3.5C18 1.1 15.2 0 12 0 7.3 0 3.2 2.6 1.2 6.6l4 3.1c.9-2.9 3.6-4.9 6.8-4.9z"/></svg>`;
+
+        if (gdriveState.accessToken) {
+          if (userBox) userBox.classList.remove('hidden');
+          if (loginBox) loginBox.classList.add('hidden');
+          if (emailEl) emailEl.textContent = gdriveState.userEmail || 'Google 계정 연결됨';
+          if (lastEl) lastEl.textContent = statusText || (gdriveState.lastSyncAt ? `마지막 동기화: ${gdriveState.lastSyncAt}` : '동기화 완료');
+          if (badge) {
+            badge.textContent = gdriveState.syncing ? '동기화 중...' : '연결됨';
+            badge.className = 'text-[11px] font-semibold px-2.5 py-1 rounded-full ' +
+              (isError ? 'bg-rose-100 text-rose-700' : 'bg-emerald-100 text-emerald-700');
+          }
+          if (hdrBtn) hdrBtn.title = (gdriveState.userEmail || 'Google Drive') + (gdriveState.syncing ? ' · 동기화 중' : ' · 동기화됨');
+          if (hdrIconWrap) {
+            const iconName = gdriveState.syncing ? 'refresh-cw' : (isError ? 'alert-circle' : 'cloud-check');
+            const iconCls = gdriveState.syncing ? 'text-sky-400 animate-spin' : (isError ? 'text-rose-400' : 'text-emerald-400');
+            hdrIconWrap.innerHTML = `<i id="headerSyncIcon" data-lucide="${iconName}" class="w-4 h-4 ${iconCls}"></i>`;
+          }
+        } else if (gdriveState.wasLoggedIn) {
+          if (userBox) userBox.classList.add('hidden');
+          if (loginBox) loginBox.classList.remove('hidden');
+          if (badge) {
+            badge.textContent = currentLang === 'en' ? 'Reconnect Needed' : '세션 만료 (재연결)';
+            badge.className = 'text-[11px] font-semibold px-2.5 py-1 rounded-full bg-amber-100 text-amber-800';
+          }
+          if (hdrBtn) hdrBtn.title = currentLang === 'en' ? 'Reconnect Google Drive' : 'Google Drive 재연결';
+          if (hdrIconWrap) {
+            hdrIconWrap.innerHTML = '<i id="headerSyncIcon" data-lucide="refresh-cw" class="w-4 h-4 text-amber-400"></i>';
+          }
+        } else {
+          if (userBox) userBox.classList.add('hidden');
+          if (loginBox) loginBox.classList.remove('hidden');
+          if (badge) {
+            badge.textContent = currentLang === 'en' ? 'Disconnected' : '미연결';
+            badge.className = 'text-[11px] font-semibold px-2.5 py-1 rounded-full bg-slate-100 text-slate-600';
+          }
+          if (hdrBtn) hdrBtn.title = currentLang === 'en' ? 'Sign in with Google' : 'Google 로그인';
+          if (hdrIconWrap) {
+            hdrIconWrap.innerHTML = googleG;
+          }
+        }
+        if (window.lucide) lucide.createIcons();
+      }
+
+      function loadGsiScript() {
+        return new Promise((resolve, reject) => {
+          if (window.google && window.google.accounts && window.google.accounts.oauth2) {
+            resolve();
+            return;
+          }
+          const script = document.createElement('script');
+          script.src = 'https://accounts.google.com/gsi/client';
+          script.async = true;
+          script.defer = true;
+          script.onload = () => resolve();
+          script.onerror = () => reject(new Error('Google 로그인 스크립트를 불러오지 못했습니다.'));
+          document.head.appendChild(script);
+        });
+      }
+
+      async function fetchWithTimeout(url, options, timeoutMs) {
+        const controller = new AbortController();
+        const timer = setTimeout(() => controller.abort(), timeoutMs || 15000);
+        try {
+          return await fetch(url, Object.assign({}, options, { signal: controller.signal }));
+        } catch (err) {
+          if (err && err.name === 'AbortError') {
+            throw new Error('요청 시간 초과 (네트워크 또는 API 응답 지연)');
+          }
+          throw err;
+        } finally {
+          clearTimeout(timer);
+        }
+      }
+
+      async function fetchGoogleUserEmail(token) {
+        try {
+          const res = await fetchWithTimeout('https://www.googleapis.com/oauth2/v3/userinfo', {
+            headers: { Authorization: 'Bearer ' + token }
+          }, 8000);
+          if (res.ok) {
+            const info = await res.json();
+            return info.email || null;
+          }
+        } catch (e) {}
+        return null;
+      }
+
+      async function ensureDriveFolderPath(token, folderPath) {
+        const segments = String(folderPath || '')
+          .split('/')
+          .map(s => s.trim())
+          .filter(Boolean);
+        let parentId = 'root';
+        for (const seg of segments) {
+          const escapedSeg = seg.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+          const q = encodeURIComponent(
+            `name = '${escapedSeg}' and mimeType = 'application/vnd.google-apps.folder' and '${parentId}' in parents and trashed = false`
+          );
+          const listUrl = `https://www.googleapis.com/drive/v3/files?spaces=drive&q=${q}&fields=files(id,name)`;
+          try {
+            const listRes = await fetchWithTimeout(listUrl, {
+              headers: { Authorization: 'Bearer ' + token }
+            }, 15000);
+            if (!listRes.ok) throw new Error('폴더 조회 실패 (' + listRes.status + ')');
+            const listData = await listRes.json();
+            if (listData.files && listData.files.length) {
+              parentId = listData.files[0].id;
+            } else {
+              const createRes = await fetchWithTimeout(
+                'https://www.googleapis.com/drive/v3/files',
+                {
+                  method: 'POST',
+                  headers: {
+                    Authorization: 'Bearer ' + token,
+                    'Content-Type': 'application/json'
+                  },
+                  body: JSON.stringify({
+                    name: seg,
+                    mimeType: 'application/vnd.google-apps.folder',
+                    parents: [parentId]
+                  })
+                },
+                15000
+              );
+              if (!createRes.ok) throw new Error('폴더 생성 실패 (' + createRes.status + ')');
+              const createdFolder = await createRes.json();
+              parentId = createdFolder.id;
+            }
+          } catch (err) {
+            throw err;
+          }
+        }
+        gdriveState.driveFolderId = parentId;
+        return parentId;
+      }
+
+      async function findDriveSyncFile(token) {
+        const folderId = gdriveState.driveFolderId || await ensureDriveFolderPath(token, gdriveState.folderPath);
+        const q = encodeURIComponent(`name = '${GDRIVE_SYNC_FILENAME}' and '${folderId}' in parents and trashed = false`);
+        const url = `https://www.googleapis.com/drive/v3/files?spaces=drive&q=${q}&fields=files(id,name,modifiedTime)`;
+        try {
+          const res = await fetchWithTimeout(url, {
+            headers: { Authorization: 'Bearer ' + token }
+          }, 15000);
+          if (!res.ok) throw new Error('Drive 파일 조회 실패 (' + res.status + ')');
+          const data = await res.json();
+          return (data.files && data.files.length) ? data.files[0] : null;
+        } catch (err) {
+          throw err;
+        }
+      }
+
+      async function downloadDriveFile(token, fileId) {
+        const url = `https://www.googleapis.com/drive/v3/files/${encodeURIComponent(fileId)}?alt=media`;
+        try {
+          const res = await fetchWithTimeout(url, {
+            headers: { Authorization: 'Bearer ' + token }
+          }, 15000);
+          if (!res.ok) throw new Error('Drive 파일 다운로드 실패 (' + res.status + ')');
+          return await res.json();
+        } catch (err) {
+          throw err;
+        }
+      }
+
+      async function uploadToDrive(silent) {
+        if (!gdriveState.accessToken) return;
+        gdriveState.syncing = true;
+        updateSyncUI('Google Drive에 저장 중...');
+        try {
+          const payload = JSON.stringify(state);
+          if (!gdriveState.driveFileId) {
+            const existing = await findDriveSyncFile(gdriveState.accessToken);
+            if (existing) gdriveState.driveFileId = existing.id;
+          }
+
+          if (!gdriveState.driveFileId) {
+            const createRes = await fetchWithTimeout(
+              'https://www.googleapis.com/drive/v3/files',
+              {
+                method: 'POST',
+                headers: {
+                  Authorization: 'Bearer ' + gdriveState.accessToken,
+                  'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                  name: GDRIVE_SYNC_FILENAME,
+                  parents: [gdriveState.driveFolderId || await ensureDriveFolderPath(gdriveState.accessToken, gdriveState.folderPath)],
+                  mimeType: 'application/json'
+                })
+              },
+              15000
+            );
+            if (!createRes.ok) throw new Error('Drive 파일 생성 실패 (' + createRes.status + ')');
+            const created = await createRes.json();
+            gdriveState.driveFileId = created.id;
+          }
+
+          const patchRes = await fetchWithTimeout(
+            `https://www.googleapis.com/upload/drive/v3/files/${encodeURIComponent(gdriveState.driveFileId)}?uploadType=media`,
+            {
+              method: 'PATCH',
+              headers: {
+                Authorization: 'Bearer ' + gdriveState.accessToken,
+                'Content-Type': 'application/json'
+              },
+              body: payload
+            },
+            15000
+          );
+          if (!patchRes.ok) {
+            if (patchRes.status === 404) gdriveState.driveFileId = null;
+            throw new Error('Drive 저장 실패 (' + patchRes.status + ')');
+          }
+
+          const nowTime = new Date().toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+          gdriveState.lastSyncAt = nowTime;
+          gdriveState.syncing = false;
+          saveDriveSession();
+          updateSyncUI(`마지막 동기화: ${nowTime}`);
+          if (!silent) showToast('Google Drive에 데이터를 저장했습니다.');
+        } catch (err) {
+          gdriveState.syncing = false;
+          if (String(err.message || '').includes('401')) {
+            gdriveState.accessToken = null;
+            gdriveState.expiresAt = 0;
+            saveDriveSession();
+            loadDriveSession();
+      updateSyncUI();
+      if (gdriveState.accessToken) {
+        scheduleTokenRefresh();
+        syncOnLogin();
+      }
+            if (!silent) showToast('로그인 세션이 만료되었습니다. 재연결 버튼을 눌러 주세요.');
+            return;
+          }
+          updateSyncUI('동기화 오류: ' + err.message, true);
+          if (!silent) showToast('Google Drive 동기화 실패: ' + err.message);
+        }
+      }
+
+      function countTotalRecords(dataObj) {
+        const d = sanitizeStateData(dataObj);
+        return (d.vehicles ? d.vehicles.length : 0) +
+          (d.fuelLogs ? d.fuelLogs.length : 0) +
+          (d.maintLogs ? d.maintLogs.length : 0);
+      }
+
+      function applyRemoteRootState(remote) {
+        const clean = sanitizeStateData(remote);
+        state = clean;
+        saveState(true);
+        renderAll();
+      }
+
+      async function syncOnLogin() {
+        if (!gdriveState.accessToken) return;
+        gdriveState.syncing = true;
+        updateSyncUI('Drive 데이터 확인 중...');
+        try {
+          gdriveState.userEmail = await fetchGoogleUserEmail(gdriveState.accessToken);
+          const fileMeta = await findDriveSyncFile(gdriveState.accessToken);
+          if (!fileMeta) {
+            gdriveState.driveFileId = null;
+            await uploadToDrive(true);
+            showToast('Google Drive에 새 동기화 파일을 생성했습니다.');
+            return;
+          }
+          gdriveState.driveFileId = fileMeta.id;
+          const remoteData = await downloadDriveFile(gdriveState.accessToken, fileMeta.id);
+          const localCount = countTotalRecords(state);
+          const remoteCount = countTotalRecords(remoteData);
+          const cleanRemote = sanitizeStateData(remoteData);
+
+          if (localCount === 0 && remoteCount > 0) {
+            applyRemoteRootState(cleanRemote);
+            const nowTime = new Date().toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+            gdriveState.lastSyncAt = nowTime;
+            gdriveState.syncing = false;
+            saveDriveSession();
+            updateSyncUI(`마지막 동기화: ${nowTime}`);
+            showToast('Google Drive에서 기존 차계부 데이터를 불러왔습니다.');
+            return;
+          }
+
+          const localFingerprint = JSON.stringify({ v: state.vehicles, f: state.fuelLogs, m: state.maintLogs });
+          const remoteFingerprint = JSON.stringify({ v: cleanRemote.vehicles, f: cleanRemote.fuelLogs, m: cleanRemote.maintLogs });
+          if (remoteCount > 0 && localFingerprint !== remoteFingerprint) {
+            gdriveState.pendingRemotePayload = remoteData;
+            gdriveState.syncing = false;
+            updateSyncUI('동기화 선택 대기 중');
+            document.getElementById('syncConflictMsg').textContent =
+              `Google Drive에 저장된 데이터(기록 ${remoteCount}건)와 현재 기기의 데이터(기록 ${localCount}건)가 다릅니다. 어떤 데이터를 적용할까요?`;
+            document.getElementById('syncConflictModal').classList.remove('hidden');
+            return;
+          }
+
+          await uploadToDrive(true);
+          showToast('Google Drive 동기화가 완료되었습니다.');
+        } catch (err) {
+          gdriveState.syncing = false;
+          updateSyncUI('동기화 오류: ' + err.message, true);
+          showToast('Google Drive 연결 중 오류가 발생했습니다.');
+        }
+      }
+
+      async function startGoogleLogin(silentRefresh) {
+        const cid = (document.getElementById('gdriveClientId').value || gdriveState.clientId || '').trim();
+        if (!cid) {
+          if (!silentRefresh) {
+            setActiveTab('backup');
+            showToast('먼저 Google OAuth 클라이언트 ID를 입력해 주세요.');
+          }
+          return;
+        }
+        saveClientId(cid);
+        try {
+          await loadGsiScript();
+          const tokenClient = window.google.accounts.oauth2.initTokenClient({
+            client_id: cid,
+            scope: GDRIVE_SCOPES,
+            callback: (resp) => {
+              if (resp && resp.access_token) {
+                const expiresIn = Number(resp.expires_in || 3600);
+                gdriveState.accessToken = resp.access_token;
+                gdriveState.expiresAt = Date.now() + expiresIn * 1000;
+                gdriveState.wasLoggedIn = true;
+                saveDriveSession();
+                scheduleTokenRefresh();
+                if (silentRefresh) {
+                  updateSyncUI();
+                } else {
+                  syncOnLogin();
+                }
+              } else if (!silentRefresh) {
+                showToast('Google 로그인 승인이 취소되었습니다.');
+              }
+            }
+          });
+          tokenClient.requestAccessToken({ prompt: '' });
+        } catch (err) {
+          if (!silentRefresh) showToast(err.message || 'Google 로그인을 시작할 수 없습니다.');
+        }
+      }
+
+      function uid() {
+        return 'id_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 7);
+      }
+
+      function todayStr() {
+        const d = new Date();
+        const yyyy = d.getFullYear();
+        const mm = String(d.getMonth() + 1).padStart(2, '0');
+        const dd = String(d.getDate()).padStart(2, '0');
+        return `${yyyy}-${mm}-${dd}`;
+      }
+
+      function fmtNum(n) {
+        if (n === null || n === undefined || isNaN(n)) return '-';
+        return Number(n).toLocaleString('ko-KR');
+      }
+
+      function esc(str) {
+        return String(str || '')
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;');
+      }
+
+      function resolveVehicleBrand(vehicle) {
+        if (vehicle && vehicle.brand) return vehicle.brand;
+        const n = String((vehicle && vehicle.name) || vehicle || '').toLowerCase();
+        if (n.includes('bmw')) return 'BMW';
+        if (n.includes('아우디') || n.includes('audi')) return 'Audi';
+        if (n.includes('벤츠') || n.includes('benz') || n.includes('mercedes')) return 'Benz';
+        if (n.includes('현대') || n.includes('hyundai')) return 'Hyundai';
+        if (n.includes('기아') || n.includes('kia')) return 'Kia';
+        if (n.includes('제네시스') || n.includes('genesis')) return 'Genesis';
+        if (n.includes('폭스바겐') || n.includes('volkswagen') || n.includes('vw')) return 'Volkswagen';
+        if (n.includes('볼보') || n.includes('volvo')) return 'Volvo';
+        if (n.includes('포르쉐') || n.includes('porsche')) return 'Porsche';
+        if (n.includes('테슬라') || n.includes('tesla')) return 'Tesla';
+        if (n.includes('렉서스') || n.includes('lexus')) return 'Lexus';
+        if (n.includes('토요타') || n.includes('toyota')) return 'Toyota';
+        if (n.includes('혼다') || n.includes('honda')) return 'Honda';
+        if (n.includes('미니') || n.includes('mini')) return 'MINI';
+        if (n.includes('랜드로버') || n.includes('land rover')) return 'LandRover';
+        if (n.includes('쉐보레') || n.includes('chevrolet')) return 'Chevrolet';
+        if (n.includes('르노') || n.includes('renault')) return 'Renault';
+        if (n.includes('kgm') || n.includes('쌍용')) return 'KGM';
+        return 'Other';
+      }
+
+      function getBrandLogoSvg(vehicle, sizeClass) {
+        const brand = resolveVehicleBrand(vehicle);
+        const cls = sizeClass || 'w-6 h-6';
+        if (brand === 'BMW') {
+          return `<svg class="${cls}" viewBox="0 0 64 64" aria-label="BMW 로고">
+            <circle cx="32" cy="32" r="30" fill="#111827" stroke="#e2e8f0" stroke-width="2.5"/>
+            <circle cx="32" cy="32" r="21" fill="#ffffff" stroke="#94a3b8" stroke-width="1"/>
+            <path d="M32 32 L32 11 A21 21 0 0 0 11 32 Z" fill="#0284c7"/>
+            <path d="M32 32 L53 32 A21 21 0 0 1 32 53 Z" fill="#0284c7"/>
+            <circle cx="32" cy="32" r="21" fill="none" stroke="#1e293b" stroke-width="1.5"/>
+            <text x="32" y="9.5" text-anchor="middle" fill="#ffffff" font-size="6.5" font-weight="700" font-family="Inter, sans-serif">BMW</text>
+          </svg>`;
+        }
+        if (brand === 'Audi') {
+          return `<svg class="${cls}" viewBox="0 0 88 36" aria-label="아우디 로고">
+            <circle cx="17" cy="18" r="11" fill="none" stroke="currentColor" stroke-width="3.2"/>
+            <circle cx="35" cy="18" r="11" fill="none" stroke="currentColor" stroke-width="3.2"/>
+            <circle cx="53" cy="18" r="11" fill="none" stroke="currentColor" stroke-width="3.2"/>
+            <circle cx="71" cy="18" r="11" fill="none" stroke="currentColor" stroke-width="3.2"/>
+          </svg>`;
+        }
+        if (brand === 'Benz') {
+          return `<svg class="${cls}" viewBox="0 0 64 64" aria-label="벤츠 로고">
+            <circle cx="32" cy="32" r="28" fill="none" stroke="currentColor" stroke-width="3.5"/>
+            <path d="M32 6 L36 30 L55 45 L32 36 L9 45 L28 30 Z" fill="currentColor"/>
+          </svg>`;
+        }
+        if (brand === 'Hyundai') {
+          return `<svg class="${cls}" viewBox="0 0 64 40" aria-label="현대 로고">
+            <ellipse cx="32" cy="20" rx="29" ry="17" fill="none" stroke="currentColor" stroke-width="3"/>
+            <path d="M18 31 L25 9 L30 9 L26 20 L38 19 L41 9 L46 9 L39 31 L34 31 L37 23 L25 24 L23 31 Z" fill="currentColor"/>
+          </svg>`;
+        }
+        if (brand === 'Kia') {
+          return `<svg class="${cls}" viewBox="0 0 72 32" aria-label="기아 로고">
+            <path d="M8 24 L8 8 L13 8 L13 15 L23 8 L29 8 L18 16 L29 24 L23 24 L13 17 L13 24 Z M34 8 L39 8 L39 24 L34 24 Z M45 24 L53 8 L58 8 L66 24 L61 24 L59 20 L52 20 L50 24 Z M53.5 16.5 L57.5 16.5 L55.5 12 Z" fill="currentColor"/>
+          </svg>`;
+        }
+        if (brand === 'Volkswagen') {
+          return `<svg class="${cls}" viewBox="0 0 64 64" aria-label="폭스바겐 로고">
+            <circle cx="32" cy="32" r="28" fill="none" stroke="currentColor" stroke-width="3.5"/>
+            <path d="M18 14 L27 34 L32 23 L37 34 L46 14" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linejoin="round"/>
+            <path d="M16 24 L28 50 L32 41 L36 50 L48 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linejoin="round"/>
+          </svg>`;
+        }
+        if (brand === 'Tesla') {
+          return `<svg class="${cls}" viewBox="0 0 64 64" aria-label="테슬라 로고">
+            <path d="M12 16 Q32 10 52 16 L49 21 Q38 18 35 19 L32 54 L29 19 Q26 18 15 21 Z" fill="currentColor"/>
+          </svg>`;
+        }
+        if (brand !== 'Other') {
+          const shortTag = brand.slice(0, 3).toUpperCase();
+          return `<svg class="${cls}" viewBox="0 0 64 64" aria-label="${esc(brand)} 로고">
+            <rect x="4" y="10" width="56" height="44" rx="12" fill="none" stroke="currentColor" stroke-width="3.2"/>
+            <text x="32" y="38" text-anchor="middle" fill="currentColor" font-size="18" font-weight="800" font-family="Inter, sans-serif">${esc(shortTag)}</text>
+          </svg>`;
+        }
+        return `<i data-lucide="car-front" class="${cls}"></i>`;
+      }
+
+      function getActiveVehicle() {
+        if (!state.vehicles || !state.vehicles.length) return null;
+        return state.vehicles.find(v => v.id === state.activeVehicleId) || state.vehicles[0];
+      }
+
+      function getVehicleOdo(vehicleId) {
+        const v = state.vehicles.find(x => x.id === vehicleId);
+        let maxOdo = v ? Number(v.initialOdo || 0) : 0;
+        state.fuelLogs.filter(f => f.vehicleId === vehicleId).forEach(f => {
+          if (Number(f.odo) > maxOdo) maxOdo = Number(f.odo);
+        });
+        state.maintLogs.filter(m => m.vehicleId === vehicleId).forEach(m => {
+          if (Number(m.odo) > maxOdo) maxOdo = Number(m.odo);
+        });
+        return maxOdo;
+      }
+
+      // Compute Full-to-Full fuel efficiency for a vehicle's logs
+      function computeFuelStats(vehicleId) {
+        const logs = state.fuelLogs
+          .filter(f => f.vehicleId === vehicleId)
+          .slice()
+          .sort((a, b) => (a.odo - b.odo) || a.date.localeCompare(b.date));
+
+        let lastFullIdx = -1;
+        let pendingLiters = 0;
+        const enriched = logs.map((log, idx) => {
+          const item = Object.assign({}, log, {
+            efficiency: null,
+            costPerKm: null,
+            distDelta: null,
+            unitPriceCalc: log.liters > 0 ? Math.round(log.totalCost / log.liters) : 0
+          });
+
+          if (lastFullIdx === -1) {
+            if (log.isFull) lastFullIdx = idx;
+            return item;
+          }
+
+          pendingLiters += Number(log.liters);
+          if (log.isFull) {
+            const prevFull = logs[lastFullIdx];
+            const dist = Number(log.odo) - Number(prevFull.odo);
+            if (dist > 0 && pendingLiters > 0) {
+              item.efficiency = Number((dist / pendingLiters).toFixed(2));
+              item.distDelta = dist;
+              // sum costs from lastFullIdx+1 to idx
+              let segCost = 0;
+              for (let k = lastFullIdx + 1; k <= idx; k++) segCost += Number(logs[k].totalCost);
+              item.costPerKm = Math.round(segCost / dist);
+            }
+            lastFullIdx = idx;
+            pendingLiters = 0;
+          }
+          return item;
+        });
+
+        // Overall average efficiency across full-to-full segments
+        const fullIndices = enriched.map((l, i) => l.isFull ? i : -1).filter(i => i !== -1);
+        let avgEfficiency = null;
+        if (fullIndices.length >= 2) {
+          const firstFull = enriched[fullIndices[0]];
+          const lastFull = enriched[fullIndices[fullIndices.length - 1]];
+          const totalDist = Number(lastFull.odo) - Number(firstFull.odo);
+          let totalLiters = 0;
+          for (let i = fullIndices[0] + 1; i <= fullIndices[fullIndices.length - 1]; i++) {
+            totalLiters += Number(enriched[i].liters);
+          }
+          if (totalDist > 0 && totalLiters > 0) {
+            avgEfficiency = Number((totalDist / totalLiters).toFixed(2));
+          }
+        }
+
+        const totalFuelCost = enriched.reduce((s, l) => s + Number(l.totalCost || 0), 0);
+        const totalLitersAll = enriched.reduce((s, l) => s + Number(l.liters || 0), 0);
+        const validEffs = enriched.filter(l => l.efficiency !== null);
+        const latestEfficiency = validEffs.length ? validEffs[validEffs.length - 1].efficiency : null;
+
+        return {
+          enrichedAsc: enriched,
+          enrichedDesc: enriched.slice().reverse(),
+          avgEfficiency,
+          latestEfficiency,
+          totalFuelCost,
+          totalLitersAll
+        };
+      }
+
+      function showToast(msg) {
+        const toast = document.getElementById('toast');
+        document.getElementById('toastMsg').textContent = msg;
+        toast.classList.remove('hidden');
+        clearTimeout(toast._timer);
+        toast._timer = setTimeout(() => toast.classList.add('hidden'), 2600);
+      }
+
+      function openConfirm(title, message, onOk) {
+        document.getElementById('confirmTitle').textContent = title;
+        document.getElementById('confirmMessage').textContent = message;
+        confirmCallback = onOk;
+        document.getElementById('confirmModal').classList.remove('hidden');
+      }
+
+      function closeModal(id) {
+        document.getElementById(id).classList.add('hidden');
+      }
+
+      function setActiveTab(tab) {
+        state.activeTab = tab;
+        saveState();
+        document.querySelectorAll('.tab-panel').forEach(p => p.classList.add('hidden'));
+        const target = document.getElementById('tab-' + tab);
+        if (target) target.classList.remove('hidden');
+
+        document.querySelectorAll('.nav-tab').forEach(btn => {
+          const active = btn.dataset.tab === tab;
+          btn.classList.toggle('border-sky-600', active);
+          btn.classList.toggle('text-sky-600', active);
+          btn.classList.toggle('border-transparent', !active);
+          btn.classList.toggle('text-slate-500', !active);
+        });
+
+        document.querySelectorAll('.mob-tab').forEach(btn => {
+          const active = btn.dataset.tab === tab;
+          btn.classList.toggle('text-sky-600', active);
+          btn.classList.toggle('text-slate-400', !active);
+        });
+
+        if (tab === 'dashboard') {
+          renderCharts();
+        }
+      }
+
+      function renderAll() {
+        applyLanguage();
+        renderVehicleTabs();
+        renderVehicleBanner();
+        renderDashboard();
+        renderFuelTab();
+        renderMaintenanceTab();
+        setActiveTab(state.activeTab);
+        if (window.lucide) lucide.createIcons();
+      }
+
+      function renderVehicleTabs() {
+        const container = document.getElementById('vehicleTabs');
+        if (!state.vehicles.length) {
+          container.innerHTML = `
+            <button id="btnEmptyAddVehicleTab" class="shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-slate-800/80 text-slate-300 hover:bg-slate-800 transition">
+              <i data-lucide="plus-circle" class="w-3.5 h-3.5 text-sky-400"></i>
+              <span>${currentLang === 'en' ? 'No vehicles yet · Add Vehicle' : '등록된 차량 없음 · 차량 추가'}</span>
+            </button>
+          `;
+          const btn = document.getElementById('btnEmptyAddVehicleTab');
+          if (btn) btn.addEventListener('click', () => document.getElementById('btnOpenVehicleModal').click());
+          return;
+        }
+        container.innerHTML = state.vehicles.map(v => {
+          const active = v.id === state.activeVehicleId;
+          return `
+            <button data-select-vehicle="${esc(v.id)}" class="shrink-0 inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-semibold transition ${
+              active
+                ? 'bg-sky-500 text-slate-950 shadow-sm'
+                : 'bg-slate-800/80 text-slate-300 hover:bg-slate-800'
+            }">
+              <span class="inline-flex items-center justify-center shrink-0">${getBrandLogoSvg(v, resolveVehicleBrand(v) === 'Audi' ? 'w-7 h-3.5' : 'w-4 h-4')}</span>
+              <span>${esc(v.name)}</span>
+              ${v.plate ? `<span class="opacity-75 font-normal">(${esc(v.plate)})</span>` : ''}
+            </button>
+          `;
+        }).join('');
+      }
+
+      function renderVehicleBanner() {
+        const v = getActiveVehicle();
+        if (!v) {
+          document.getElementById('headerSubtitle').textContent = '';
+          document.getElementById('vehicleBanner').innerHTML = `
+            <div class="flex items-center gap-3.5">
+              <div class="w-14 h-14 rounded-2xl flex items-center justify-center bg-slate-100 text-slate-400 shrink-0 border border-slate-200">
+                <i data-lucide="car" class="w-7 h-7"></i>
+              </div>
+              <div>
+                <h2 class="text-base sm:text-lg font-bold text-slate-900">${currentLang === 'en' ? 'No vehicles registered yet' : '등록된 차량이 없습니다'}</h2>
+                <p class="text-xs text-slate-500 mt-0.5">${currentLang === 'en' ? 'Sign in with Google to load your Drive backup, or add a vehicle manually.' : 'Google 계정으로 로그인해 기존 데이터를 불러오거나 새 차량을 추가해 주세요.'}</p>
+              </div>
+            </div>
+            <div class="flex items-center gap-2 shrink-0">
+              <button id="btnBannerGoogleLogin" class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-sky-600 hover:bg-sky-700 text-white text-xs font-semibold shadow-xs transition">
+                <i data-lucide="cloud" class="w-3.5 h-3.5"></i> ${currentLang === 'en' ? 'Sign in & Load' : '로그인 · 불러오기'}
+              </button>
+              <button id="btnBannerAddVehicle" class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-semibold transition">
+                <i data-lucide="plus" class="w-3.5 h-3.5"></i> ${currentLang === 'en' ? 'Add Vehicle' : '차량 추가'}
+              </button>
+            </div>
+          `;
+          document.getElementById('btnBannerGoogleLogin').addEventListener('click', () => startGoogleLogin(false));
+          document.getElementById('btnBannerAddVehicle').addEventListener('click', () => document.getElementById('btnOpenVehicleModal').click());
+          return;
+        }
+        const odo = getVehicleOdo(v.id);
+        const fuelCount = state.fuelLogs.filter(f => f.vehicleId === v.id).length;
+        const maintCount = state.maintLogs.filter(m => m.vehicleId === v.id).length;
+        document.getElementById('headerSubtitle').textContent = `· ${v.name}`;
+
+        document.getElementById('vehicleBanner').innerHTML = `
+          <div class="flex items-center gap-3.5">
+            <div class="w-14 h-14 rounded-2xl flex items-center justify-center bg-slate-900 text-white font-bold shrink-0 shadow-xs border border-slate-200">
+              ${getBrandLogoSvg(v, resolveVehicleBrand(v) === 'Audi' ? 'w-11 h-5 text-slate-100' : 'w-10 h-10 text-sky-400')}
+            </div>
+            <div>
+              <div class="flex flex-wrap items-center gap-2">
+                <h2 class="text-lg font-bold text-slate-900">${esc(v.name)}</h2>
+                <span class="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-slate-100 text-slate-700">${esc(v.year)}년형 · ${esc(v.fuelType)}</span>
+                ${v.plate ? `<span class="text-[11px] font-medium px-2 py-0.5 rounded-full bg-sky-50 text-sky-700 border border-sky-200">${esc(v.plate)}</span>` : ''}
+              </div>
+              <p class="text-xs text-slate-500 mt-1">주유 ${fuelCount}건 · 정비 ${maintCount}건 기록됨</p>
+            </div>
+          </div>
+          <div class="flex items-center justify-between sm:justify-end gap-4 border-t sm:border-t-0 pt-3 sm:pt-0 border-slate-100">
+            <div class="text-left sm:text-right">
+              <div class="text-[11px] font-medium text-slate-400">${t('curOdo')}</div>
+              <div class="text-xl font-bold text-slate-900 tabular-nums">${fmtNum(odo)} <span class="text-xs font-medium text-slate-500">km</span></div>
+            </div>
+          </div>
+        `;
+      }
+
+      function renderDashboard() {
+        const v = getActiveVehicle();
+        const fuelStats = v ? computeFuelStats(v.id) : { enrichedAsc: [], enrichedDesc: [], avgEfficiency: null, latestEfficiency: null, totalFuelCost: 0, totalLitersAll: 0 };
+        const maintLogs = v ? state.maintLogs.filter(m => m.vehicleId === v.id) : [];
+        const totalMaintCost = maintLogs.reduce((s, m) => s + Number(m.cost || 0), 0);
+        const totalSpend = fuelStats.totalFuelCost + totalMaintCost;
+
+        const kpis = [
+          {
+            label: t('kpiAvgEff'),
+            value: fuelStats.avgEfficiency !== null ? `${fuelStats.avgEfficiency} km/L` : '-',
+            sub: fuelStats.latestEfficiency !== null ? `${currentLang === 'en' ? 'Latest' : '최근'} ${fuelStats.latestEfficiency} km/L` : (currentLang === 'en' ? 'Needs 2+ full tanks' : '가득 주유 2회 이상 시 계산'),
+            icon: 'gauge',
+            color: 'text-sky-600 bg-sky-50'
+          },
+          {
+            label: t('kpiTotalFuel'),
+            value: `${fmtNum(fuelStats.totalFuelCost)}${currentLang === 'en' ? ' KRW' : '원'}`,
+            sub: `${fuelStats.totalLitersAll.toFixed(1)} L`,
+            icon: 'fuel',
+            color: 'text-emerald-600 bg-emerald-50'
+          },
+          {
+            label: t('kpiTotalMaint'),
+            value: `${fmtNum(totalMaintCost)}${currentLang === 'en' ? ' KRW' : '원'}`,
+            sub: `${maintLogs.length} ${currentLang === 'en' ? 'records' : '건'}`,
+            icon: 'wrench',
+            color: 'text-indigo-600 bg-indigo-50'
+          },
+          {
+            label: t('kpiTotalSpend'),
+            value: `${fmtNum(totalSpend)}${currentLang === 'en' ? ' KRW' : '원'}`,
+            sub: t('chartExpSub'),
+            icon: 'wallet',
+            color: 'text-amber-600 bg-amber-50'
+          }
+        ];
+
+        document.getElementById('kpiGrid').innerHTML = kpis.map(k => `
+          <div class="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm">
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-xs font-semibold text-slate-500">${k.label}</span>
+              <span class="w-7 h-7 rounded-lg flex items-center justify-center ${k.color}">
+                <i data-lucide="${k.icon}" class="w-4 h-4"></i>
+              </span>
+            </div>
+            <div class="text-lg sm:text-xl font-bold text-slate-900 tabular-nums truncate">${k.value}</div>
+            <div class="text-[11px] text-slate-400 mt-0.5 truncate">${k.sub}</div>
+          </div>
+        `).join('');
+
+        // Recent Activity (combined top 5)
+        const combined = [
+          ...fuelStats.enrichedDesc.map(f => ({
+            type: 'fuel',
+            date: f.date,
+            odo: f.odo,
+            title: `주유 ${Number(f.liters).toFixed(1)}L${f.station ? ' · ' + f.station : ''}`,
+            sub: f.efficiency ? `연비 ${f.efficiency} km/L` : (f.isFull ? '가득 주유' : '부분 주유'),
+            amount: f.totalCost
+          })),
+          ...maintLogs.map(m => ({
+            type: 'maint',
+            date: m.date,
+            odo: m.odo,
+            title: m.category + (m.shop ? ' · ' + m.shop : ''),
+            sub: m.memo || '정비 완료',
+            amount: m.cost
+          }))
+        ].sort((a, b) => b.date.localeCompare(a.date) || b.odo - a.odo).slice(0, 5);
+
+        const recentEl = document.getElementById('recentActivityList');
+        if (!combined.length) {
+          recentEl.innerHTML = `
+            <div class="py-8 text-center text-xs text-slate-400">
+              아직 등록된 기록이 없습니다.<br />상단의 <strong>주유 입력</strong> 또는 <strong>정비 입력</strong>으로 첫 기록을 남겨보세요.
+            </div>
+          `;
+        } else {
+          recentEl.innerHTML = combined.map(item => `
+            <div class="py-2.5 flex items-center justify-between gap-3">
+              <div class="flex items-center gap-2.5 min-w-0">
+                <div class="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${item.type === 'fuel' ? 'bg-sky-50 text-sky-600' : 'bg-indigo-50 text-indigo-600'}">
+                  <i data-lucide="${item.type === 'fuel' ? 'fuel' : 'wrench'}" class="w-4 h-4"></i>
+                </div>
+                <div class="min-w-0">
+                  <div class="text-xs font-semibold text-slate-800 truncate">${esc(item.title)}</div>
+                  <div class="text-[11px] text-slate-400">${esc(item.date)} · ${fmtNum(item.odo)}km · ${esc(item.sub)}</div>
+                </div>
+              </div>
+              <div class="text-xs font-bold text-slate-800 tabular-nums shrink-0">${fmtNum(item.amount)}원</div>
+            </div>
+          `).join('');
+        }
+
+        // Dashboard Consumables Summary (top 4 tracked)
+        const currentOdo = v ? getVehicleOdo(v.id) : 0;
+        const tracked = MAINT_CATEGORIES.filter(c => c.intervalKm).slice(0, 4);
+        document.getElementById('dashboardConsumablesList').innerHTML = tracked.map(cat => {
+          const info = v ? getConsumableStatus(v.id, cat, currentOdo) : { lastLog: null, pct: 0, statusText: t('statusNone'), barClass: 'bg-slate-200', textClass: 'text-slate-400' };
+          return `
+            <div>
+              <div class="flex items-center justify-between text-xs mb-1">
+                <span class="font-semibold text-slate-700">${esc(cat.label)}</span>
+                <span class="${info.textClass} font-medium">${info.statusText}</span>
+              </div>
+              <div class="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
+                <div class="h-full ${info.barClass} rounded-full transition-all" style="width: ${info.pct}%"></div>
+              </div>
+            </div>
+          `;
+        }).join('');
+
+        renderCharts();
+      }
+
+      function getConsumableStatus(vehicleId, cat, currentOdo) {
+        const matches = state.maintLogs
+          .filter(m => m.vehicleId === vehicleId && m.category === cat.id)
+          .sort((a, b) => b.odo - a.odo || b.date.localeCompare(a.date));
+
+        if (!matches.length) {
+          return {
+            lastLog: null,
+            pct: 0,
+            statusText: `권장 ${fmtNum(cat.intervalKm)}km · 기록 없음`,
+            barClass: 'bg-slate-300',
+            textClass: 'text-slate-400'
+          };
+        }
+        const last = matches[0];
+        const used = Math.max(0, currentOdo - Number(last.odo));
+        const pct = Math.min(100, Math.round((used / cat.intervalKm) * 100));
+        const remain = cat.intervalKm - used;
+
+        if (remain <= 0) {
+          return {
+            lastLog: last,
+            pct: 100,
+            statusText: `교체 필요 (${fmtNum(Math.abs(remain))}km 초과)`,
+            barClass: 'bg-rose-500',
+            textClass: 'text-rose-600'
+          };
+        }
+        if (pct >= 80) {
+          return {
+            lastLog: last,
+            pct,
+            statusText: `점검 권장 (${fmtNum(remain)}km 남음)`,
+            barClass: 'bg-amber-500',
+            textClass: 'text-amber-600'
+          };
+        }
+        return {
+          lastLog: last,
+          pct,
+          statusText: `양호 (${fmtNum(remain)}km 남음)`,
+          barClass: 'bg-emerald-500',
+          textClass: 'text-emerald-600'
+        };
+      }
+
+      function renderCharts() {
+        if (typeof Chart === 'undefined') return;
+        const v = getActiveVehicle();
+        const fuelStats = v ? computeFuelStats(v.id) : { enrichedAsc: [] };
+        const effPoints = fuelStats.enrichedAsc.filter(f => f.efficiency !== null);
+
+        const effCanvas = document.getElementById('efficiencyChart');
+        const effEmpty = document.getElementById('efficiencyChartEmpty');
+
+        if (efficiencyChartInstance) {
+          efficiencyChartInstance.destroy();
+          efficiencyChartInstance = null;
+        }
+
+        if (!effPoints.length) {
+          effEmpty.classList.remove('hidden');
+        } else {
+          effEmpty.classList.add('hidden');
+          efficiencyChartInstance = new Chart(effCanvas, {
+            type: 'line',
+            data: {
+              labels: effPoints.map(p => p.date.slice(5)),
+              datasets: [{
+                label: '구간 연비 (km/L)',
+                data: effPoints.map(p => p.efficiency),
+                borderColor: '#0284c7',
+                backgroundColor: 'rgba(2, 132, 199, 0.12)',
+                borderWidth: 2.5,
+                fill: true,
+                tension: 0.3,
+                pointRadius: 4,
+                pointBackgroundColor: '#0284c7'
+              }]
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: { legend: { display: false } },
+              scales: {
+                y: { beginAtZero: false, grid: { color: '#f1f5f9' } },
+                x: { grid: { display: false } }
+              }
+            }
+          });
+        }
+
+        // Monthly expense chart
+        const monthMap = {};
+        (v ? state.fuelLogs.filter(f => f.vehicleId === v.id) : []).forEach(f => {
+          const m = f.date.slice(0, 7);
+          if (!monthMap[m]) monthMap[m] = { fuel: 0, maint: 0 };
+          monthMap[m].fuel += Number(f.totalCost || 0);
+        });
+        (v ? state.maintLogs.filter(m => m.vehicleId === v.id) : []).forEach(m => {
+          const ym = m.date.slice(0, 7);
+          if (!monthMap[ym]) monthMap[ym] = { fuel: 0, maint: 0 };
+          monthMap[ym].maint += Number(m.cost || 0);
+        });
+        const months = Object.keys(monthMap).sort().slice(-6);
+
+        const expCanvas = document.getElementById('expenseChart');
+        const expEmpty = document.getElementById('expenseChartEmpty');
+
+        if (expenseChartInstance) {
+          expenseChartInstance.destroy();
+          expenseChartInstance = null;
+        }
+
+        if (!months.length) {
+          expEmpty.classList.remove('hidden');
+        } else {
+          expEmpty.classList.add('hidden');
+          expenseChartInstance = new Chart(expCanvas, {
+            type: 'bar',
+            data: {
+              labels: months,
+              datasets: [
+                {
+                  label: '주유비',
+                  data: months.map(m => monthMap[m].fuel),
+                  backgroundColor: '#0ea5e9',
+                  borderRadius: 6
+                },
+                {
+                  label: '정비비',
+                  data: months.map(m => monthMap[m].maint),
+                  backgroundColor: '#6366f1',
+                  borderRadius: 6
+                }
+              ]
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 11 } } } },
+              scales: {
+                x: { stacked: true, grid: { display: false } },
+                y: { stacked: true, grid: { color: '#f1f5f9' } }
+              }
+            }
+          });
+        }
+      }
+
+      function renderFuelTab() {
+        const v = getActiveVehicle();
+        if (!v) {
+          document.getElementById('fuelSummaryBadge').textContent = '0건';
+          document.getElementById('fuelListContainer').innerHTML = `
+            <div class="p-10 text-center text-sm text-slate-400">
+              ${currentLang === 'en' ? 'No vehicle selected. Please add a vehicle or sign in to load data.' : '등록된 차량이 없습니다. 먼저 차량을 추가하거나 로그인하여 데이터를 불러오세요.'}
+            </div>
+          `;
+          return;
+        }
+        const stats = computeFuelStats(v.id);
+        const monthFilter = document.getElementById('fuelMonthFilter').value;
+        const rows = monthFilter
+          ? stats.enrichedDesc.filter(r => r.date.startsWith(monthFilter))
+          : stats.enrichedDesc;
+
+        const sumCost = rows.reduce((s, r) => s + Number(r.totalCost || 0), 0);
+        const sumLiters = rows.reduce((s, r) => s + Number(r.liters || 0), 0);
+        document.getElementById('fuelSummaryBadge').textContent =
+          `${rows.length}건 · ${sumLiters.toFixed(1)}L · ${fmtNum(sumCost)}원`;
+
+        const container = document.getElementById('fuelListContainer');
+        if (!rows.length) {
+          container.innerHTML = `
+            <div class="p-10 text-center text-sm text-slate-400">
+              표시할 주유 기록이 없습니다. 우측 상단 <strong>주유 추가</strong> 버튼을 눌러 기록을 시작하세요.
+            </div>
+          `;
+          return;
+        }
+
+        container.innerHTML = rows.map(r => `
+          <div class="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:bg-slate-50/70 transition">
+            <div class="space-y-1 min-w-0">
+              <div class="flex flex-wrap items-center gap-2">
+                <span class="text-sm font-bold text-slate-900">${esc(r.date)}</span>
+                <span class="text-xs font-semibold px-2 py-0.5 rounded-md bg-slate-100 text-slate-700 tabular-nums">${fmtNum(r.odo)} km</span>
+                ${r.isFull
+                  ? '<span class="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700">가득</span>'
+                  : '<span class="text-[11px] font-medium px-2 py-0.5 rounded-full bg-slate-100 text-slate-500">부분</span>'}
+                ${r.efficiency !== null
+                  ? `<span class="text-xs font-bold px-2 py-0.5 rounded-full bg-sky-50 text-sky-700 border border-sky-200">${r.efficiency} km/L</span>`
+                  : ''}
+              </div>
+              <div class="text-xs text-slate-500 flex flex-wrap items-center gap-x-3 gap-y-1">
+                <span>${Number(r.liters).toFixed(2)} L (${fmtNum(r.unitPriceCalc)}원/L)</span>
+                ${r.distDelta ? `<span>구간 ${fmtNum(r.distDelta)}km · ${fmtNum(r.costPerKm)}원/km</span>` : ''}
+                ${r.station ? `<span>${esc(r.station)}</span>` : ''}
+                ${r.memo ? `<span class="text-slate-400">· ${esc(r.memo)}</span>` : ''}
+              </div>
+            </div>
+            <div class="flex items-center justify-between sm:justify-end gap-3 shrink-0">
+              <span class="text-base font-bold text-slate-900 tabular-nums">${fmtNum(r.totalCost)}원</span>
+              <div class="flex items-center gap-1">
+                <button data-edit-fuel="${esc(r.id)}" class="p-1.5 text-slate-400 hover:text-sky-600 rounded-lg hover:bg-sky-50" title="수정">
+                  <i data-lucide="pencil" class="w-4 h-4"></i>
+                </button>
+                <button data-del-fuel="${esc(r.id)}" class="p-1.5 text-slate-400 hover:text-rose-600 rounded-lg hover:bg-rose-50" title="삭제">
+                  <i data-lucide="trash-2" class="w-4 h-4"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+        `).join('');
+      }
+
+      function renderMaintenanceTab() {
+        const v = getActiveVehicle();
+        if (!v) {
+          document.getElementById('consumablesGrid').innerHTML = '';
+          document.getElementById('maintSummaryText').textContent = '0건';
+          document.getElementById('maintListContainer').innerHTML = `
+            <div class="p-10 text-center text-sm text-slate-400">
+              ${currentLang === 'en' ? 'No vehicle selected. Please add a vehicle or sign in to load data.' : '등록된 차량이 없습니다. 먼저 차량을 추가하거나 로그인하여 데이터를 불러오세요.'}
+            </div>
+          `;
+          return;
+        }
+        const currentOdo = getVehicleOdo(v.id);
+
+        // Consumables grid
+        const tracked = MAINT_CATEGORIES.filter(c => c.intervalKm);
+        document.getElementById('consumablesGrid').innerHTML = tracked.map(cat => {
+          const info = getConsumableStatus(v.id, cat, currentOdo);
+          return `
+            <div class="border border-slate-200 rounded-xl p-3.5 space-y-2 bg-slate-50/40">
+              <div class="flex items-center justify-between gap-2">
+                <span class="text-xs font-bold text-slate-800">${esc(cat.label)}</span>
+                <span class="text-[11px] text-slate-400">주기 ${fmtNum(cat.intervalKm)}km</span>
+              </div>
+              <div class="w-full h-2 bg-slate-200 rounded-full overflow-hidden">
+                <div class="h-full ${info.barClass} rounded-full" style="width: ${info.pct}%"></div>
+              </div>
+              <div class="flex items-center justify-between text-[11px]">
+                <span class="${info.textClass} font-semibold">${info.statusText}</span>
+                <button data-quick-maint="${esc(cat.id)}" class="text-sky-600 hover:underline font-medium">교체 기록</button>
+              </div>
+            </div>
+          `;
+        }).join('');
+
+        // Populate category filter if needed
+        const filterSel = document.getElementById('maintCategoryFilter');
+        const prevVal = filterSel.value;
+        filterSel.innerHTML = '<option value="ALL">전체 항목</option>' +
+          MAINT_CATEGORIES.map(c => `<option value="${esc(c.id)}">${esc(c.label)}</option>`).join('');
+        filterSel.value = prevVal || 'ALL';
+
+        const catFilter = filterSel.value;
+        const rows = state.maintLogs
+          .filter(m => m.vehicleId === v.id && (catFilter === 'ALL' || m.category === catFilter))
+          .slice()
+          .sort((a, b) => b.date.localeCompare(a.date) || b.odo - a.odo);
+
+        const totalCost = rows.reduce((s, r) => s + Number(r.cost || 0), 0);
+        document.getElementById('maintSummaryText').textContent = `총 ${rows.length}건 · 합계 ${fmtNum(totalCost)}원`;
+
+        const listEl = document.getElementById('maintListContainer');
+        if (!rows.length) {
+          listEl.innerHTML = `
+            <div class="p-10 text-center text-sm text-slate-400">
+              표시할 정비 내역이 없습니다. 엔진오일이나 소모품 교체 이력을 추가해 보세요.
+            </div>
+          `;
+          return;
+        }
+
+        listEl.innerHTML = rows.map(r => `
+          <div class="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:bg-slate-50/70 transition">
+            <div class="space-y-1 min-w-0">
+              <div class="flex flex-wrap items-center gap-2">
+                <span class="text-sm font-bold text-slate-900">${esc(r.category)}</span>
+                <span class="text-xs text-slate-500">${esc(r.date)}</span>
+                <span class="text-xs font-semibold px-2 py-0.5 rounded-md bg-slate-100 text-slate-700 tabular-nums">${fmtNum(r.odo)} km</span>
+              </div>
+              <div class="text-xs text-slate-500 flex flex-wrap items-center gap-x-3 gap-y-1">
+                ${r.shop ? `<span>${esc(r.shop)}</span>` : ''}
+                ${r.memo ? `<span class="text-slate-600">${esc(r.memo)}</span>` : ''}
+              </div>
+            </div>
+            <div class="flex items-center justify-between sm:justify-end gap-3 shrink-0">
+              <span class="text-base font-bold text-slate-900 tabular-nums">${fmtNum(r.cost)}원</span>
+              <div class="flex items-center gap-1">
+                <button data-edit-maint="${esc(r.id)}" class="p-1.5 text-slate-400 hover:text-sky-600 rounded-lg hover:bg-sky-50" title="수정">
+                  <i data-lucide="pencil" class="w-4 h-4"></i>
+                </button>
+                <button data-del-maint="${esc(r.id)}" class="p-1.5 text-slate-400 hover:text-rose-600 rounded-lg hover:bg-rose-50" title="삭제">
+                  <i data-lucide="trash-2" class="w-4 h-4"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+        `).join('');
+      }
+
+      function renderVehicleManager() {
+        const listEl = document.getElementById('vehicleManagerList');
+        if (!state.vehicles.length) {
+          listEl.innerHTML = `<div class="p-4 text-center text-xs text-slate-400 bg-slate-50 rounded-xl border border-slate-200">${currentLang === 'en' ? 'No vehicles registered yet.' : '등록된 차량이 없습니다. 아래에서 새 차량을 추가해 주세요.'}</div>`;
+          if (window.lucide) lucide.createIcons();
+          return;
+        }
+        listEl.innerHTML = state.vehicles.map(v => `
+          <div class="flex items-center justify-between p-3 rounded-xl border border-slate-200 bg-slate-50/50">
+            <div class="flex items-center gap-3">
+              <div class="w-9 h-9 rounded-xl bg-slate-900 text-white flex items-center justify-center shrink-0">
+                ${getBrandLogoSvg(v, resolveVehicleBrand(v) === 'Audi' ? 'w-7 h-3.5 text-white' : 'w-6 h-6 text-sky-400')}
+              </div>
+              <div>
+                <div class="text-sm font-bold text-slate-800">${esc(v.name)}</div>
+                <div class="text-xs text-slate-500">${esc(v.year)}년형 · ${esc(v.fuelType)} ${v.plate ? '· ' + esc(v.plate) : ''} · ${fmtNum(getVehicleOdo(v.id))}km</div>
+              </div>
+            </div>
+            <div class="flex items-center gap-1">
+              <button data-edit-vehicle="${esc(v.id)}" class="p-1.5 text-slate-500 hover:text-sky-600 rounded-lg hover:bg-sky-50" title="편집">
+                <i data-lucide="pencil" class="w-4 h-4"></i>
+              </button>
+              ${state.vehicles.length > 1 ? `
+                <button data-del-vehicle="${esc(v.id)}" class="p-1.5 text-slate-500 hover:text-rose-600 rounded-lg hover:bg-rose-50" title="삭제">
+                  <i data-lucide="trash-2" class="w-4 h-4"></i>
+                </button>
+              ` : ''}
+            </div>
+          </div>
+        `).join('');
+        if (window.lucide) lucide.createIcons();
+      }
+
+      // Open Fuel Modal
+      function openFuelModal(editId) {
+        const v = getActiveVehicle();
+        if (!v) {
+          showToast(currentLang === 'en' ? 'Please add a vehicle or sign in first.' : '먼저 차량을 추가하거나 로그인해 데이터를 불러오세요.');
+          document.getElementById('btnOpenVehicleModal').click();
+          return;
+        }
+        const form = document.getElementById('fuelForm');
+        form.reset();
+        document.getElementById('fuelPreviewBox').classList.add('hidden');
+        document.getElementById('fuelEditId').value = '';
+
+        if (editId) {
+          const item = state.fuelLogs.find(f => f.id === editId);
+          if (!item) return;
+          document.getElementById('fuelModalTitle').textContent = '주유 기록 수정';
+          document.getElementById('fuelEditId').value = item.id;
+          document.getElementById('fuelDate').value = item.date;
+          document.getElementById('fuelOdo').value = item.odo;
+          document.getElementById('fuelLiters').value = item.liters;
+          document.getElementById('fuelTotalCost').value = item.totalCost;
+          document.getElementById('fuelUnitPrice').value = item.liters > 0 ? Math.round(item.totalCost / item.liters) : '';
+          document.getElementById('fuelIsFull').checked = !!item.isFull;
+          document.getElementById('fuelStation').value = item.station || '';
+          document.getElementById('fuelMemo').value = item.memo || '';
+        } else {
+          document.getElementById('fuelModalTitle').textContent = `${v.name} 주유 입력`;
+          document.getElementById('fuelDate').value = todayStr();
+          const lastOdo = getVehicleOdo(v.id);
+          if (lastOdo > 0) document.getElementById('fuelOdo').value = lastOdo;
+          document.getElementById('fuelIsFull').checked = true;
+        }
+        document.getElementById('fuelModal').classList.remove('hidden');
+        updateFuelPreview();
+      }
+
+      function updateFuelPreview() {
+        const v = getActiveVehicle();
+        const odo = Number(document.getElementById('fuelOdo').value);
+        const liters = Number(document.getElementById('fuelLiters').value);
+        const isFull = document.getElementById('fuelIsFull').checked;
+        const editId = document.getElementById('fuelEditId').value;
+        const box = document.getElementById('fuelPreviewBox');
+
+        if (!isFull || !odo || !liters) {
+          box.classList.add('hidden');
+          return;
+        }
+        const prevFulls = state.fuelLogs
+          .filter(f => f.vehicleId === v.id && f.isFull && f.id !== editId && Number(f.odo) < odo)
+          .sort((a, b) => b.odo - a.odo);
+
+        if (!prevFulls.length) {
+          box.classList.add('hidden');
+          return;
+        }
+        const prevFull = prevFulls[0];
+        const partialSum = state.fuelLogs
+          .filter(f => f.vehicleId === v.id && !f.isFull && f.id !== editId && Number(f.odo) > Number(prevFull.odo) && Number(f.odo) < odo)
+          .reduce((s, f) => s + Number(f.liters), 0);
+
+        const dist = odo - Number(prevFull.odo);
+        const totalL = liters + partialSum;
+        if (dist > 0 && totalL > 0) {
+          const eff = (dist / totalL).toFixed(2);
+          box.textContent = `예상 연비: ${eff} km/L (직전 가득 주유 대비 +${fmtNum(dist)} km)`;
+          box.classList.remove('hidden');
+        } else {
+          box.classList.add('hidden');
+        }
+      }
+
+      // Open Maint Modal
+      function openMaintModal(editId, presetCategory) {
+        const v = getActiveVehicle();
+        if (!v) {
+          showToast(currentLang === 'en' ? 'Please add a vehicle or sign in first.' : '먼저 차량을 추가하거나 로그인해 데이터를 불러오세요.');
+          document.getElementById('btnOpenVehicleModal').click();
+          return;
+        }
+        const form = document.getElementById('maintForm');
+        form.reset();
+        document.getElementById('maintEditId').value = '';
+
+        const catSel = document.getElementById('maintCategory');
+        catSel.innerHTML = MAINT_CATEGORIES.map(c => `<option value="${esc(c.id)}">${esc(c.label)}</option>`).join('');
+
+        if (editId) {
+          const item = state.maintLogs.find(m => m.id === editId);
+          if (!item) return;
+          document.getElementById('maintModalTitle').textContent = '정비 기록 수정';
+          document.getElementById('maintEditId').value = item.id;
+          document.getElementById('maintDate').value = item.date;
+          document.getElementById('maintOdo').value = item.odo;
+          catSel.value = item.category;
+          document.getElementById('maintCost').value = item.cost;
+          document.getElementById('maintShop').value = item.shop || '';
+          document.getElementById('maintMemo').value = item.memo || '';
+        } else {
+          document.getElementById('maintModalTitle').textContent = `${v.name} 정비 입력`;
+          document.getElementById('maintDate').value = todayStr();
+          const lastOdo = getVehicleOdo(v.id);
+          if (lastOdo > 0) document.getElementById('maintOdo').value = lastOdo;
+          if (presetCategory) catSel.value = presetCategory;
+        }
+        document.getElementById('maintModal').classList.remove('hidden');
+      }
+
+      // CSV Export helper (UTF-8 BOM for Korean Excel)
+      function downloadFile(filename, content, mimeType) {
+        const blob = new Blob([content], { type: mimeType });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(url);
+      }
+
+      function csvCell(val) {
+        const s = String(val === null || val === undefined ? '' : val);
+        return `"${s.replace(/"/g, '""')}"`;
+      }
+
+      // Event Listeners
+      document.addEventListener('click', (e) => {
+        const tabBtn = e.target.closest('[data-tab]');
+        if (tabBtn) {
+          setActiveTab(tabBtn.dataset.tab);
+          return;
+        }
+
+        const gotoBtn = e.target.closest('[data-goto]');
+        if (gotoBtn) {
+          setActiveTab(gotoBtn.dataset.goto);
+          return;
+        }
+
+        const vehBtn = e.target.closest('[data-select-vehicle]');
+        if (vehBtn) {
+          state.activeVehicleId = vehBtn.dataset.selectVehicle;
+          saveState();
+          renderAll();
+          return;
+        }
+
+        const closeBtn = e.target.closest('[data-close-modal]');
+        if (closeBtn) {
+          closeModal(closeBtn.dataset.closeModal);
+          return;
+        }
+
+        const editFuel = e.target.closest('[data-edit-fuel]');
+        if (editFuel) {
+          openFuelModal(editFuel.dataset.editFuel);
+          return;
+        }
+
+        const delFuel = e.target.closest('[data-del-fuel]');
+        if (delFuel) {
+          const id = delFuel.dataset.delFuel;
+          openConfirm('주유 기록 삭제', '이 주유 기록을 삭제할까요? 삭제 후 연비가 다시 계산됩니다.', () => {
+            state.fuelLogs = state.fuelLogs.filter(f => f.id !== id);
+            saveState();
+            renderAll();
+            showToast('주유 기록이 삭제되었습니다.');
+          });
+          return;
+        }
+
+        const editMaint = e.target.closest('[data-edit-maint]');
+        if (editMaint) {
+          openMaintModal(editMaint.dataset.editMaint);
+          return;
+        }
+
+        const delMaint = e.target.closest('[data-del-maint]');
+        if (delMaint) {
+          const id = delMaint.dataset.delMaint;
+          openConfirm('정비 기록 삭제', '이 정비 내역을 삭제할까요?', () => {
+            state.maintLogs = state.maintLogs.filter(m => m.id !== id);
+            saveState();
+            renderAll();
+            showToast('정비 내역이 삭제되었습니다.');
+          });
+          return;
+        }
+
+        const quickMaint = e.target.closest('[data-quick-maint]');
+        if (quickMaint) {
+          openMaintModal(null, quickMaint.dataset.quickMaint);
+          return;
+        }
+
+        const editVeh = e.target.closest('[data-edit-vehicle]');
+        if (editVeh) {
+          const v = state.vehicles.find(x => x.id === editVeh.dataset.editVehicle);
+          if (!v) return;
+          document.getElementById('vehicleFormTitle').textContent = '차량 정보 수정';
+          document.getElementById('vehicleEditId').value = v.id;
+          document.getElementById('vBrand').value = resolveVehicleBrand(v);
+          document.getElementById('vName').value = v.name;
+          document.getElementById('vPlate').value = v.plate || '';
+          document.getElementById('vYear').value = v.year;
+          document.getElementById('vFuelType').value = v.fuelType;
+          document.getElementById('vOdo').value = v.initialOdo || 0;
+          document.getElementById('btnCancelVehicleEdit').classList.remove('hidden');
+          return;
+        }
+
+        const delVeh = e.target.closest('[data-del-vehicle]');
+        if (delVeh) {
+          const id = delVeh.dataset.delVehicle;
+          openConfirm('차량 삭제', '차량과 해당 차량의 모든 주유·정비 기록이 삭제됩니다. 계속할까요?', () => {
+            state.vehicles = state.vehicles.filter(v => v.id !== id);
+            state.fuelLogs = state.fuelLogs.filter(f => f.vehicleId !== id);
+            state.maintLogs = state.maintLogs.filter(m => m.vehicleId !== id);
+            if (state.activeVehicleId === id) state.activeVehicleId = state.vehicles[0].id;
+            saveState();
+            renderVehicleManager();
+            renderAll();
+            showToast('차량이 삭제되었습니다.');
+          });
+        }
+      });
+
+      // Fuel Modal Triggers
+      ['btnOpenFuelModalTop', 'btnOpenFuelModalMobile', 'btnAddFuelInTab'].forEach(id => {
+        document.getElementById(id).addEventListener('click', () => openFuelModal(null));
+      });
+
+      // Maint Modal Triggers
+      ['btnOpenMaintModalTop', 'btnOpenMaintModalMobile', 'btnAddMaintInTab'].forEach(id => {
+        document.getElementById(id).addEventListener('click', () => openMaintModal(null));
+      });
+
+      // Vehicle Modal Trigger
+      function populateBrandSelect() {
+        const sel = document.getElementById('vBrand');
+        if (!sel) return;
+        sel.innerHTML = CAR_BRANDS.map(b => `<option value="${esc(b.id)}">${esc(b.label)}</option>`).join('');
+      }
+
+      document.getElementById('btnOpenVehicleModal').addEventListener('click', () => {
+        populateBrandSelect();
+        document.getElementById('vehicleForm').reset();
+        document.getElementById('vehicleEditId').value = '';
+        document.getElementById('vehicleFormTitle').textContent = '새 차량 추가';
+        document.getElementById('btnCancelVehicleEdit').classList.add('hidden');
+        renderVehicleManager();
+        document.getElementById('vehicleModal').classList.remove('hidden');
+      });
+
+      document.getElementById('btnCancelVehicleEdit').addEventListener('click', () => {
+        document.getElementById('vehicleForm').reset();
+        document.getElementById('vehicleEditId').value = '';
+        document.getElementById('vehicleFormTitle').textContent = '새 차량 추가';
+        document.getElementById('btnCancelVehicleEdit').classList.add('hidden');
+      });
+
+      // Auto-calculate total cost or unit price in Fuel form
+      document.getElementById('fuelLiters').addEventListener('input', () => {
+        const liters = Number(document.getElementById('fuelLiters').value);
+        const unit = Number(document.getElementById('fuelUnitPrice').value);
+        if (liters > 0 && unit > 0) {
+          document.getElementById('fuelTotalCost').value = Math.round(liters * unit);
+        }
+        updateFuelPreview();
+      });
+
+      document.getElementById('fuelUnitPrice').addEventListener('input', () => {
+        const liters = Number(document.getElementById('fuelLiters').value);
+        const unit = Number(document.getElementById('fuelUnitPrice').value);
+        if (liters > 0 && unit > 0) {
+          document.getElementById('fuelTotalCost').value = Math.round(liters * unit);
+        }
+      });
+
+      document.getElementById('fuelTotalCost').addEventListener('input', () => {
+        const liters = Number(document.getElementById('fuelLiters').value);
+        const total = Number(document.getElementById('fuelTotalCost').value);
+        if (liters > 0 && total > 0) {
+          document.getElementById('fuelUnitPrice').value = Math.round(total / liters);
+        }
+      });
+
+      document.getElementById('fuelOdo').addEventListener('input', updateFuelPreview);
+      document.getElementById('fuelIsFull').addEventListener('change', updateFuelPreview);
+
+      // Submit Fuel Form
+      document.getElementById('fuelForm').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const editId = document.getElementById('fuelEditId').value;
+        const entry = {
+          id: editId || uid(),
+          vehicleId: state.activeVehicleId,
+          date: document.getElementById('fuelDate').value,
+          odo: Number(document.getElementById('fuelOdo').value),
+          liters: Number(document.getElementById('fuelLiters').value),
+          totalCost: Number(document.getElementById('fuelTotalCost').value),
+          isFull: document.getElementById('fuelIsFull').checked,
+          station: document.getElementById('fuelStation').value.trim(),
+          memo: document.getElementById('fuelMemo').value.trim()
+        };
+
+        if (editId) {
+          const idx = state.fuelLogs.findIndex(f => f.id === editId);
+          if (idx !== -1) state.fuelLogs[idx] = entry;
+          showToast('주유 기록이 수정되었습니다.');
+        } else {
+          state.fuelLogs.push(entry);
+          showToast('주유 기록이 저장되었습니다.');
+        }
+        saveState();
+        closeModal('fuelModal');
+        renderAll();
+      });
+
+      // Submit Maint Form
+      document.getElementById('maintForm').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const editId = document.getElementById('maintEditId').value;
+        const entry = {
+          id: editId || uid(),
+          vehicleId: state.activeVehicleId,
+          date: document.getElementById('maintDate').value,
+          odo: Number(document.getElementById('maintOdo').value),
+          category: document.getElementById('maintCategory').value,
+          cost: Number(document.getElementById('maintCost').value),
+          shop: document.getElementById('maintShop').value.trim(),
+          memo: document.getElementById('maintMemo').value.trim()
+        };
+
+        if (editId) {
+          const idx = state.maintLogs.findIndex(m => m.id === editId);
+          if (idx !== -1) state.maintLogs[idx] = entry;
+          showToast('정비 기록이 수정되었습니다.');
+        } else {
+          state.maintLogs.push(entry);
+          showToast('정비 기록이 저장되었습니다.');
+        }
+        saveState();
+        closeModal('maintModal');
+        renderAll();
+      });
+
+      // Submit Vehicle Form
+      document.getElementById('vehicleForm').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const editId = document.getElementById('vehicleEditId').value;
+        const palette = ['#0284c7', '#4f46e5', '#059669', '#d97706', '#dc2626'];
+        const selectedBrand = document.getElementById('vBrand').value || 'Other';
+        if (editId) {
+          const v = state.vehicles.find(x => x.id === editId);
+          if (v) {
+            v.brand = selectedBrand;
+            v.name = document.getElementById('vName').value.trim();
+            v.plate = document.getElementById('vPlate').value.trim();
+            v.year = Number(document.getElementById('vYear').value);
+            v.fuelType = document.getElementById('vFuelType').value;
+            v.initialOdo = Number(document.getElementById('vOdo').value);
+          }
+          showToast('차량 정보가 수정되었습니다.');
+        } else {
+          const newVeh = {
+            id: uid(),
+            brand: selectedBrand,
+            name: document.getElementById('vName').value.trim(),
+            plate: document.getElementById('vPlate').value.trim(),
+            year: Number(document.getElementById('vYear').value),
+            fuelType: document.getElementById('vFuelType').value,
+            initialOdo: Number(document.getElementById('vOdo').value),
+            color: palette[state.vehicles.length % palette.length]
+          };
+          state.vehicles.push(newVeh);
+          state.activeVehicleId = newVeh.id;
+          showToast('새 차량이 추가되었습니다.');
+        }
+        document.getElementById('vehicleForm').reset();
+        document.getElementById('vehicleEditId').value = '';
+        document.getElementById('vehicleFormTitle').textContent = '새 차량 추가';
+        document.getElementById('btnCancelVehicleEdit').classList.add('hidden');
+        saveState();
+        renderVehicleManager();
+        renderAll();
+      });
+
+      // Filters
+      document.getElementById('fuelMonthFilter').addEventListener('change', renderFuelTab);
+      document.getElementById('btnClearFuelFilter').addEventListener('click', () => {
+        document.getElementById('fuelMonthFilter').value = '';
+        renderFuelTab();
+      });
+      document.getElementById('maintCategoryFilter').addEventListener('change', renderMaintenanceTab);
+
+      // Confirm Modal buttons
+      document.getElementById('btnConfirmCancel').addEventListener('click', () => {
+        confirmCallback = null;
+        closeModal('confirmModal');
+      });
+      document.getElementById('btnConfirmOk').addEventListener('click', () => {
+        const fn = confirmCallback;
+        confirmCallback = null;
+        closeModal('confirmModal');
+        if (fn) fn();
+      });
+
+      // Exports & Backups
+      document.getElementById('btnExportFuelCsv').addEventListener('click', () => {
+        const v = getActiveVehicle();
+        if (!v) { showToast('내보낼 차량이 없습니다.'); return; }
+        const stats = computeFuelStats(v.id);
+        const headers = ['차량명', '날짜', '주행거리(km)', '주유량(L)', '금액(원)', '단가(원/L)', '가득여부', '연비(km/L)', '주유소', '메모'];
+        const lines = [headers.map(csvCell).join(',')];
+        stats.enrichedDesc.forEach(r => {
+          lines.push([
+            v.name, r.date, r.odo, r.liters, r.totalCost, r.unitPriceCalc,
+            r.isFull ? 'Y' : 'N', r.efficiency || '', r.station, r.memo
+          ].map(csvCell).join(','));
+        });
+        downloadFile(`${v.name}_주유내역_${todayStr()}.csv`, '\uFEFF' + lines.join('\n'), 'text/csv;charset=utf-8;');
+        showToast('주유 내역 CSV 파일을 저장했습니다.');
+      });
+
+      document.getElementById('btnExportMaintCsv').addEventListener('click', () => {
+        const v = getActiveVehicle();
+        if (!v) { showToast('내보낼 차량이 없습니다.'); return; }
+        const rows = state.maintLogs.filter(m => m.vehicleId === v.id).sort((a, b) => b.date.localeCompare(a.date));
+        const headers = ['차량명', '날짜', '주행거리(km)', '정비항목', '비용(원)', '정비소', '메모'];
+        const lines = [headers.map(csvCell).join(',')];
+        rows.forEach(r => {
+          lines.push([v.name, r.date, r.odo, r.category, r.cost, r.shop, r.memo].map(csvCell).join(','));
+        });
+        downloadFile(`${v.name}_정비내역_${todayStr()}.csv`, '\uFEFF' + lines.join('\n'), 'text/csv;charset=utf-8;');
+        showToast('정비 내역 CSV 파일을 저장했습니다.');
+      });
+
+      document.getElementById('btnExportJson').addEventListener('click', () => {
+        downloadFile(`차계부_백업_${todayStr()}.json`, JSON.stringify(state, null, 2), 'application/json');
+        showToast('전체 데이터 백업 파일을 저장했습니다.');
+      });
+
+      document.getElementById('inputImportJson').addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = () => {
+          try {
+            const imported = JSON.parse(reader.result);
+            if (!imported.vehicles || !Array.isArray(imported.vehicles)) throw new Error('Invalid format');
+            state = sanitizeStateData(imported);
+            saveState();
+            renderAll();
+            showToast('백업 데이터를 성공적으로 불러왔습니다.');
+          } catch (err) {
+            showToast('올바른 백업 JSON 파일이 아닙니다.');
+          }
+          e.target.value = '';
+        };
+        reader.readAsText(file);
+      });
+
+      document.getElementById('btnLoadSample').addEventListener('click', () => {
+        openConfirm('샘플 데이터 불러오기', 'BMW 5GT와 아우디 A3의 체험용 샘플 주유·정비 데이터를 추가합니다. 기존 데이터는 초기화됩니다.', () => {
+          state = {
+            activeVehicleId: 'bmw-5gt-2016',
+            activeTab: 'dashboard',
+            vehicles: JSON.parse(JSON.stringify(DEFAULT_STATE.vehicles)),
+            fuelLogs: [
+              { id: uid(), vehicleId: 'bmw-5gt-2016', date: '2026-09-10', odo: 112000, liters: 52.0, totalCost: 83200, isFull: true, station: 'GS칼텍스', memo: '가득 주유' },
+              { id: uid(), vehicleId: 'bmw-5gt-2016', date: '2026-09-28', odo: 112680, liters: 48.5, totalCost: 78570, isFull: true, station: 'SK직영', memo: '고속주행 위주' },
+              { id: uid(), vehicleId: 'bmw-5gt-2016', date: '2026-10-16', odo: 113290, liters: 49.2, totalCost: 79700, isFull: true, station: 'S-OIL', memo: '시내+외곽' },
+              { id: uid(), vehicleId: 'bmw-5gt-2016', date: '2026-11-05', odo: 113950, liters: 50.1, totalCost: 81660, isFull: true, station: 'GS칼텍스', memo: '' },
+              { id: uid(), vehicleId: 'audi-a3-2015', date: '2026-09-15', odo: 94200, liters: 41.0, totalCost: 65600, isFull: true, station: '현대오일뱅크', memo: '' },
+              { id: uid(), vehicleId: 'audi-a3-2015', date: '2026-10-12', odo: 94860, liters: 39.8, totalCost: 64470, isFull: true, station: 'SK직영', memo: '출퇴근' },
+              { id: uid(), vehicleId: 'audi-a3-2015', date: '2026-11-08', odo: 95530, liters: 40.5, totalCost: 66010, isFull: true, station: 'GS칼텍스', memo: '' }
+            ],
+            maintLogs: [
+              { id: uid(), vehicleId: 'bmw-5gt-2016', date: '2026-09-20', odo: 112300, category: '엔진오일', cost: 165000, shop: '수입차 전문정비', memo: '합성유 5W-30 + 오일필터' },
+              { id: uid(), vehicleId: 'bmw-5gt-2016', date: '2026-10-22', odo: 113400, category: '에어컨필터', cost: 45000, shop: '자가교체', memo: '활성탄 필터' },
+              { id: uid(), vehicleId: 'audi-a3-2015', date: '2026-10-02', odo: 94500, category: '엔진오일', cost: 130000, shop: '모터스', memo: '오일 교환 및 하부 점검' }
+            ]
+          };
+          saveState();
+          renderAll();
+          showToast('체험용 샘플 데이터를 불러왔습니다.');
+        });
+      });
+
+      document.getElementById('btnResetAll').addEventListener('click', () => {
+        openConfirm('전체 데이터 초기화', '저장된 모든 주유 및 정비 기록을 삭제하고 초기 상태로 되돌릴까요?', () => {
+          state = JSON.parse(JSON.stringify(DEFAULT_STATE));
+          saveState();
+          renderAll();
+          showToast('현재 계정의 데이터가 초기화되었습니다.');
+        });
+      });
+
+      // Language Toggle Handler
+      document.getElementById('btnLangToggle').addEventListener('click', () => {
+        saveLang(currentLang === 'ko' ? 'en' : 'ko');
+        renderAll();
+        updateSyncUI();
+      });
+
+      // Google Drive Sync Handlers
+      document.getElementById('btnSyncHeader').addEventListener('click', () => {
+        if (gdriveState.accessToken) {
+          uploadToDrive(false);
+        } else {
+          startGoogleLogin(false);
+        }
+      });
+
+      document.getElementById('btnSaveClientId').addEventListener('click', () => {
+        const val = document.getElementById('gdriveClientId').value.trim();
+        saveClientId(val);
+        showToast(val ? 'Google 클라이언트 ID를 저장했습니다.' : '클라이언트 ID가 비워졌습니다.');
+      });
+
+      document.getElementById('btnSaveFolderPath').addEventListener('click', () => {
+        const val = document.getElementById('gdriveFolderPath').value;
+        saveFolderPath(val);
+        document.getElementById('gdriveFolderPath').value = gdriveState.folderPath;
+        const label = gdriveState.folderPath ? `내 드라이브/${gdriveState.folderPath}` : '내 드라이브 최상위';
+        showToast(`저장 경로를 '${label}'(으)로 설정했습니다.`);
+      });
+
+      document.getElementById('btnGoogleLogin').addEventListener('click', () => startGoogleLogin(false));
+      document.getElementById('btnGoogleSyncNow').addEventListener('click', () => uploadToDrive(false));
+      document.getElementById('btnGoogleLogout').addEventListener('click', () => {
+        if (gdriveState.accessToken && window.google && window.google.accounts && window.google.accounts.oauth2) {
+          try { window.google.accounts.oauth2.revoke(gdriveState.accessToken); } catch (e) {}
+        }
+        clearDriveSession();
+        updateSyncUI();
+        showToast('Google 계정 연결을 해제했습니다.');
+      });
+
+      document.getElementById('btnUseDriveData').addEventListener('click', () => {
+        const remote = gdriveState.pendingRemotePayload;
+        gdriveState.pendingRemotePayload = null;
+        closeModal('syncConflictModal');
+        if (remote) {
+          applyRemoteRootState(remote);
+          const nowTime = new Date().toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+          gdriveState.lastSyncAt = nowTime;
+          updateSyncUI(`마지막 동기화: ${nowTime}`);
+          showToast('Google Drive 데이터로 업데이트했습니다.');
+        }
+      });
+
+      document.getElementById('btnUseLocalData').addEventListener('click', () => {
+        gdriveState.pendingRemotePayload = null;
+        closeModal('syncConflictModal');
+        uploadToDrive(false);
+      });
+
+      // Register Service Worker for full Chrome PWA install
+      if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
+        navigator.serviceWorker.register('./sw.js').catch(() => {});
+      }
+      // Dynamic PWA Manifest fallback (skipped when ./manifest.json is used)
+      (function setupDynamicManifest() {
+        try {
+          if (location.protocol !== 'https:' && location.protocol !== 'http:') return;
+          const manifestEl = document.getElementById('appManifest');
+          if (!manifestEl) return;
+          const baseUrl = location.href.split('#')[0].split('?')[0];
+          const scopeUrl = baseUrl.endsWith('/') ? baseUrl : baseUrl.substring(0, baseUrl.lastIndexOf('/') + 1);
+          const manifestObj = {
+            name: '스마트 차계부(Smart Car Care)',
+            short_name: '스마트 차계부',
+            start_url: baseUrl,
+            scope: scopeUrl,
+            display: 'standalone',
+            background_color: '#f8fafc',
+            theme_color: '#0f172a',
+            icons: [
+              {
+                src: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='112' fill='%230f172a'/%3E%3Cpath d='M128 304l32-96c8-24 24-32 48-32h96c24 0 40 8 48 32l32 96v80a16 16 0 0 1-16 16h-16a16 16 0 0 1-16-16v-16H176v16a16 16 0 0 1-16 16h-16a16 16 0 0 1-16-16v-80zm48-80l-16 48h192l-16-48c-3-10-10-16-20-16H196c-10 0-17 6-20 16zm-4 104a20 20 0 1 0 0-40 20 20 0 0 0 0 40zm168 0a20 20 0 1 0 0-40 20 20 0 0 0 0 40z' fill='%2338bdf8'/%3E%3C/svg%3E",
+                sizes: '512x512',
+                type: 'image/svg+xml',
+                purpose: 'any maskable'
+              }
+            ]
+          };
+          const blob = new Blob([JSON.stringify(manifestObj)], { type: 'application/manifest+json' });
+          manifestEl.href = URL.createObjectURL(blob);
+        } catch (e) {}
+      })();
+
+      // Initialize
+      const cidInput = document.getElementById('gdriveClientId');
+      if (cidInput && gdriveState.clientId) cidInput.value = gdriveState.clientId;
+      const folderInput = document.getElementById('gdriveFolderPath');
+      if (folderInput) folderInput.value = gdriveState.folderPath;
+      updateSyncUI();
+      const verBadge = document.getElementById('btnVersionBadge');
+      const verText = document.getElementById('appVersionText');
+      if (verBadge) verBadge.textContent = APP_VERSION;
+      if (verText) verText.textContent = APP_VERSION;
+      renderAll();
+    })();
+  </script>
+</body>
+</html>

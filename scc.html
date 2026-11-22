@@ -364,6 +364,7 @@
             <span class="text-slate-400">릴리스 2026.11.22</span>
           </div>
           <ul class="list-disc list-inside space-y-1 text-slate-500 pt-1">
+            <li>Google 로그인 세션 유지 · 자동 연장 및 원클릭 재연결 지원 (v1.5.0)</li>
             <li>기본 Google OAuth 클라이언트 ID 내장 적용 (v1.4.1)</li>
             <li>한국어 / 영어(Smart Car Care) 다국어 전환 지원 (v1.4.0)</li>
             <li>내 드라이브 직접 저장 및 사용자 지정 폴더 경로 설정 지원 (v1.3.0)</li>
@@ -649,7 +650,7 @@
     (function () {
       'use strict';
 
-      const APP_VERSION = 'v1.4.1';
+      const APP_VERSION = 'v1.5.0';
       const DEFAULT_GDRIVE_CLIENT_ID = '126554316010-1v3tt4ff6pjchimdlfschr7rs6or48tg.apps.googleusercontent.com';
       const LANG_STORAGE_KEY = 'smart_car_logbook_lang';
       let currentLang = loadLang();
@@ -779,6 +780,7 @@
       const STORAGE_KEY = 'smart_car_logbook_v2';
       const GDRIVE_CLIENT_ID_KEY = 'smart_car_logbook_gdrive_client_id';
       const GDRIVE_FOLDER_PATH_KEY = 'smart_car_logbook_gdrive_folder';
+      const GDRIVE_SESSION_KEY = 'smart_car_logbook_gdrive_session';
       const GDRIVE_SYNC_FILENAME = 'smart_car_logbook_sync.json';
       const GDRIVE_SCOPES = 'https://www.googleapis.com/auth/drive.file https://www.googleapis.com/auth/userinfo.email';
 
@@ -907,6 +909,8 @@
         folderPath: loadFolderPath(),
         driveFolderId: null,
         accessToken: null,
+        expiresAt: 0,
+        wasLoggedIn: false,
         userEmail: null,
         driveFileId: null,
         lastSyncAt: null,
@@ -914,6 +918,59 @@
         pendingRemotePayload: null
       };
       let syncDebounceTimer = null;
+      let tokenRefreshTimer = null;
+
+      function loadDriveSession() {
+        try {
+          const raw = localStorage.getItem(GDRIVE_SESSION_KEY);
+          if (!raw) return;
+          const s = JSON.parse(raw);
+          gdriveState.wasLoggedIn = !!s.wasLoggedIn;
+          gdriveState.userEmail = s.userEmail || null;
+          gdriveState.driveFileId = s.driveFileId || null;
+          gdriveState.driveFolderId = s.driveFolderId || null;
+          if (s.accessToken && s.expiresAt && Date.now() < Number(s.expiresAt) - 60000) {
+            gdriveState.accessToken = s.accessToken;
+            gdriveState.expiresAt = Number(s.expiresAt);
+          }
+        } catch (e) {}
+      }
+
+      function saveDriveSession() {
+        try {
+          localStorage.setItem(GDRIVE_SESSION_KEY, JSON.stringify({
+            wasLoggedIn: gdriveState.wasLoggedIn,
+            accessToken: gdriveState.accessToken,
+            expiresAt: gdriveState.expiresAt,
+            userEmail: gdriveState.userEmail,
+            driveFileId: gdriveState.driveFileId,
+            driveFolderId: gdriveState.driveFolderId
+          }));
+        } catch (e) {}
+      }
+
+      function clearDriveSession() {
+        clearTimeout(tokenRefreshTimer);
+        gdriveState.accessToken = null;
+        gdriveState.expiresAt = 0;
+        gdriveState.wasLoggedIn = false;
+        gdriveState.userEmail = null;
+        gdriveState.driveFileId = null;
+        gdriveState.driveFolderId = null;
+        gdriveState.lastSyncAt = null;
+        try {
+          localStorage.removeItem(GDRIVE_SESSION_KEY);
+        } catch (e) {}
+      }
+
+      function scheduleTokenRefresh() {
+        clearTimeout(tokenRefreshTimer);
+        if (!gdriveState.accessToken || !gdriveState.expiresAt) return;
+        const delay = Math.max(30000, gdriveState.expiresAt - Date.now() - 300000);
+        tokenRefreshTimer = setTimeout(() => {
+          if (gdriveState.wasLoggedIn) startGoogleLogin(true);
+        }, delay);
+      }
 
       function loadClientId() {
         try {
@@ -993,16 +1050,27 @@
             const iconCls = gdriveState.syncing ? 'text-sky-400 animate-spin' : (isError ? 'text-rose-400' : 'text-emerald-400');
             hdrIconWrap.innerHTML = `<i data-lucide="${iconName}" class="w-3.5 h-3.5 ${iconCls}"></i>`;
           }
+        } else if (gdriveState.wasLoggedIn) {
+          if (userBox) userBox.classList.add('hidden');
+          if (loginBox) loginBox.classList.remove('hidden');
+          if (badge) {
+            badge.textContent = currentLang === 'en' ? 'Reconnect Needed' : '세션 만료 (재연결)';
+            badge.className = 'text-[11px] font-semibold px-2.5 py-1 rounded-full bg-amber-100 text-amber-800';
+          }
+          if (hdrText) hdrText.textContent = currentLang === 'en' ? 'Reconnect' : '재연결';
+          if (hdrIconWrap) {
+            hdrIconWrap.innerHTML = '<i id="headerSyncIcon" data-lucide="refresh-cw" class="w-3.5 h-3.5 text-amber-400"></i>';
+          }
         } else {
           if (userBox) userBox.classList.add('hidden');
           if (loginBox) loginBox.classList.remove('hidden');
           if (badge) {
-            badge.textContent = '미연결';
+            badge.textContent = currentLang === 'en' ? 'Disconnected' : '미연결';
             badge.className = 'text-[11px] font-semibold px-2.5 py-1 rounded-full bg-slate-100 text-slate-600';
           }
-          if (hdrText) hdrText.textContent = '동기화';
+          if (hdrText) hdrText.textContent = t('syncIdle');
           if (hdrIconWrap) {
-            hdrIconWrap.innerHTML = '<i data-lucide="cloud-off" class="w-3.5 h-3.5 text-slate-400"></i>';
+            hdrIconWrap.innerHTML = '<i id="headerSyncIcon" data-lucide="cloud-off" class="w-3.5 h-3.5 text-slate-400"></i>';
           }
         }
         if (window.lucide) lucide.createIcons();
@@ -1183,10 +1251,24 @@
           const nowTime = new Date().toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
           gdriveState.lastSyncAt = nowTime;
           gdriveState.syncing = false;
+          saveDriveSession();
           updateSyncUI(`마지막 동기화: ${nowTime}`);
           if (!silent) showToast('Google Drive에 데이터를 저장했습니다.');
         } catch (err) {
           gdriveState.syncing = false;
+          if (String(err.message || '').includes('401')) {
+            gdriveState.accessToken = null;
+            gdriveState.expiresAt = 0;
+            saveDriveSession();
+            loadDriveSession();
+      updateSyncUI();
+      if (gdriveState.accessToken) {
+        scheduleTokenRefresh();
+        syncOnLogin();
+      }
+            if (!silent) showToast('로그인 세션이 만료되었습니다. 재연결 버튼을 눌러 주세요.');
+            return;
+          }
           updateSyncUI('동기화 오류: ' + err.message, true);
           if (!silent) showToast('Google Drive 동기화 실패: ' + err.message);
         }
@@ -1264,11 +1346,13 @@
         }
       }
 
-      async function startGoogleLogin() {
+      async function startGoogleLogin(silentRefresh) {
         const cid = (document.getElementById('gdriveClientId').value || gdriveState.clientId || '').trim();
         if (!cid) {
-          setActiveTab('backup');
-          showToast('먼저 Google OAuth 클라이언트 ID를 입력해 주세요.');
+          if (!silentRefresh) {
+            setActiveTab('backup');
+            showToast('먼저 Google OAuth 클라이언트 ID를 입력해 주세요.');
+          }
           return;
         }
         saveClientId(cid);
@@ -1279,16 +1363,25 @@
             scope: GDRIVE_SCOPES,
             callback: (resp) => {
               if (resp && resp.access_token) {
+                const expiresIn = Number(resp.expires_in || 3600);
                 gdriveState.accessToken = resp.access_token;
-                syncOnLogin();
-              } else {
+                gdriveState.expiresAt = Date.now() + expiresIn * 1000;
+                gdriveState.wasLoggedIn = true;
+                saveDriveSession();
+                scheduleTokenRefresh();
+                if (silentRefresh) {
+                  updateSyncUI();
+                } else {
+                  syncOnLogin();
+                }
+              } else if (!silentRefresh) {
                 showToast('Google 로그인 승인이 취소되었습니다.');
               }
             }
           });
-          tokenClient.requestAccessToken({ prompt: 'consent' });
+          tokenClient.requestAccessToken({ prompt: gdriveState.wasLoggedIn ? '' : 'consent' });
         } catch (err) {
-          showToast(err.message || 'Google 로그인을 시작할 수 없습니다.');
+          if (!silentRefresh) showToast(err.message || 'Google 로그인을 시작할 수 없습니다.');
         }
       }
 
@@ -2700,6 +2793,8 @@
       document.getElementById('btnSyncHeader').addEventListener('click', () => {
         if (gdriveState.accessToken) {
           uploadToDrive(false);
+        } else if (gdriveState.wasLoggedIn) {
+          startGoogleLogin(false);
         } else {
           setActiveTab('backup');
         }
@@ -2719,16 +2814,13 @@
         showToast(`저장 경로를 '${label}'(으)로 설정했습니다.`);
       });
 
-      document.getElementById('btnGoogleLogin').addEventListener('click', startGoogleLogin);
+      document.getElementById('btnGoogleLogin').addEventListener('click', () => startGoogleLogin(false));
       document.getElementById('btnGoogleSyncNow').addEventListener('click', () => uploadToDrive(false));
       document.getElementById('btnGoogleLogout').addEventListener('click', () => {
         if (gdriveState.accessToken && window.google && window.google.accounts && window.google.accounts.oauth2) {
           try { window.google.accounts.oauth2.revoke(gdriveState.accessToken); } catch (e) {}
         }
-        gdriveState.accessToken = null;
-        gdriveState.userEmail = null;
-        gdriveState.driveFileId = null;
-        gdriveState.lastSyncAt = null;
+        clearDriveSession();
         updateSyncUI();
         showToast('Google 계정 연결을 해제했습니다.');
       });

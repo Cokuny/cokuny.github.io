@@ -364,6 +364,7 @@
             <span class="text-slate-400">릴리스 2026.11.22</span>
           </div>
           <ul class="list-disc list-inside space-y-1 text-slate-500 pt-1">
+            <li>기본 Google OAuth 클라이언트 ID 내장 적용 (v1.4.1)</li>
             <li>한국어 / 영어(Smart Car Care) 다국어 전환 지원 (v1.4.0)</li>
             <li>내 드라이브 직접 저장 및 사용자 지정 폴더 경로 설정 지원 (v1.3.0)</li>
             <li>Google Drive 2단계 안정화 저장 · 15초 타임아웃 적용 (v1.2.0)</li>
@@ -648,7 +649,8 @@
     (function () {
       'use strict';
 
-      const APP_VERSION = 'v1.4.0';
+      const APP_VERSION = 'v1.4.1';
+      const DEFAULT_GDRIVE_CLIENT_ID = '126554316010-1v3tt4ff6pjchimdlfschr7rs6or48tg.apps.googleusercontent.com';
       const LANG_STORAGE_KEY = 'smart_car_logbook_lang';
       let currentLang = loadLang();
 
@@ -915,9 +917,9 @@
 
       function loadClientId() {
         try {
-          return localStorage.getItem(GDRIVE_CLIENT_ID_KEY) || '';
+          return localStorage.getItem(GDRIVE_CLIENT_ID_KEY) || DEFAULT_GDRIVE_CLIENT_ID;
         } catch (e) {
-          return '';
+          return DEFAULT_GDRIVE_CLIENT_ID;
         }
       }
 

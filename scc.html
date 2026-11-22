@@ -49,6 +49,10 @@
       </div>
 
       <div class="flex items-center gap-2 shrink-0">
+        <button id="btnSyncHeader" class="inline-flex items-center gap-1.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 text-xs px-2.5 py-2 rounded-lg transition" title="Google Drive 동기화 상태">
+          <i data-lucide="cloud-off" class="w-3.5 h-3.5 text-slate-400" id="headerSyncIcon"></i>
+          <span id="headerSyncText" class="hidden md:inline font-medium">동기화</span>
+        </button>
         <button id="btnOpenAccountModal" class="inline-flex items-center gap-1.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-100 text-xs px-2.5 py-2 rounded-lg transition" title="사용자 계정 전환 및 관리">
           <span id="headerAccountDot" class="w-4 h-4 rounded-full bg-sky-500 text-slate-950 font-bold text-[10px] flex items-center justify-center shrink-0">기</span>
           <span id="headerAccountName" class="max-w-[72px] sm:max-w-[110px] truncate font-medium">기본 계정</span>
@@ -226,6 +230,55 @@
 
     <!-- Tab: Backup & Export -->
     <section id="tab-backup" class="tab-panel hidden space-y-4 animate-fade-in">
+      <!-- Google Drive Auto-Sync Card -->
+      <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm space-y-4">
+        <div class="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <h2 class="text-base font-bold text-slate-900 flex items-center gap-2">
+              <i data-lucide="cloud" class="w-5 h-5 text-sky-600"></i> Google Drive 자동 동기화
+            </h2>
+            <p class="text-xs text-slate-500 mt-1">Google 계정으로 로그인하면 기기 간 데이터를 Google Drive에 자동으로 저장하고 불러옵니다.</p>
+          </div>
+          <span id="driveSyncBadge" class="text-[11px] font-semibold px-2.5 py-1 rounded-full bg-slate-100 text-slate-600">미연결</span>
+        </div>
+
+        <div class="bg-slate-50 border border-slate-200 rounded-xl p-3.5 space-y-2.5">
+          <label class="block text-xs font-semibold text-slate-700">Google OAuth 클라이언트 ID (GitHub Pages 등 HTTPS 도메인용)</label>
+          <div class="flex gap-2">
+            <input type="text" id="gdriveClientId" placeholder="예: 1234567890-xxxx.apps.googleusercontent.com" class="flex-1 border border-slate-300 rounded-xl px-3 py-2 text-xs bg-white outline-none focus:ring-2 focus:ring-sky-500" />
+            <button id="btnSaveClientId" class="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-900 text-white text-xs font-semibold shrink-0">저장</button>
+          </div>
+          <details class="text-[11px] text-slate-500 pt-1">
+            <summary class="cursor-pointer font-semibold text-sky-700 hover:underline">Google Cloud Console 설정 방법 보기</summary>
+            <ol class="list-decimal list-inside space-y-1 mt-2 text-slate-600 leading-relaxed">
+              <li>Google Cloud Console에서 프로젝트 생성 후 <strong>Google Drive API</strong>를 사용 설정합니다.</li>
+              <li><strong>API 및 서비스 → 사용자 인증 정보 → OAuth 클라이언트 ID 만들기</strong>(웹 애플리케이션)를 선택합니다.</li>
+              <li><strong>승인된 JavaScript 출처</strong>에 본인의 GitHub Pages 주소(예: <code>https://아이디.github.io</code>)를 등록합니다.</li>
+              <li>발급된 <strong>클라이언트 ID</strong>를 위 입력칸에 붙여넣고 저장한 뒤 로그인하세요.</li>
+            </ol>
+          </details>
+        </div>
+
+        <div id="driveUserBox" class="hidden flex items-center justify-between gap-3 bg-sky-50 border border-sky-200 rounded-xl px-4 py-3">
+          <div class="min-w-0">
+            <div class="text-xs font-bold text-sky-900 truncate" id="driveUserEmail">연결된 계정</div>
+            <div class="text-[11px] text-sky-700 mt-0.5" id="driveLastSyncText">동기화 대기 중</div>
+          </div>
+          <div class="flex items-center gap-2 shrink-0">
+            <button id="btnGoogleSyncNow" class="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-sky-600 hover:bg-sky-700 text-white text-xs font-semibold">
+              <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i> 지금 동기화
+            </button>
+            <button id="btnGoogleLogout" class="px-2.5 py-1.5 rounded-lg border border-sky-200 bg-white hover:bg-slate-50 text-slate-600 text-xs font-medium">로그아웃</button>
+          </div>
+        </div>
+
+        <div id="driveLoginBox">
+          <button id="btnGoogleLogin" class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-sky-600 hover:bg-sky-700 text-white text-sm font-semibold shadow-sm transition">
+            <i data-lucide="log-in" class="w-4 h-4"></i> Google 계정 로그인 및 자동 동기화 시작
+          </button>
+        </div>
+      </div>
+
       <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm space-y-4">
         <div>
           <h2 class="text-base font-bold text-slate-900">데이터 백업 및 내보내기</h2>
@@ -299,10 +352,10 @@
             <span class="text-slate-400">릴리스 2026.11.22</span>
           </div>
           <ul class="list-disc list-inside space-y-1 text-slate-500 pt-1">
-            <li>차량별(BMW 5GT · 아우디 A3 등) 브랜드 로고 및 주행거리 관리</li>
+            <li>Google 계정 로그인 및 Google Drive 자동 동기화 지원 (v1.1.0)</li>
+            <li>차량별 브랜드 선택 목록, 로고 및 주행거리 관리</li>
             <li>가득 주유 기준 구간 연비 자동 계산 및 월별 지출 차트</li>
-            <li>정비 이력 및 주요 소모품 교체 주기 트래커</li>
-            <li>다중 사용자 계정 전환 및 CSV · JSON 백업 지원</li>
+            <li>정비 이력, 소모품 교체 주기 트래커, 다중 계정 및 CSV · JSON 백업</li>
           </ul>
         </div>
       </div>
@@ -532,6 +585,25 @@
     </div>
   </div>
 
+  <!-- Modal: Sync Conflict -->
+  <div id="syncConflictModal" class="hidden fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4">
+    <div class="bg-white w-full max-w-md rounded-2xl shadow-xl p-5 space-y-4 animate-fade-in">
+      <div class="flex items-start gap-3">
+        <div class="w-10 h-10 rounded-full bg-sky-100 text-sky-600 flex items-center justify-center shrink-0">
+          <i data-lucide="cloud" class="w-5 h-5"></i>
+        </div>
+        <div>
+          <h3 class="text-base font-bold text-slate-900">Google Drive 데이터 발견</h3>
+          <p class="text-xs text-slate-600 mt-1 leading-relaxed" id="syncConflictMsg"></p>
+        </div>
+      </div>
+      <div class="flex flex-col sm:flex-row gap-2">
+        <button id="btnUseDriveData" class="flex-1 px-4 py-2.5 rounded-xl bg-sky-600 hover:bg-sky-700 text-white text-xs font-semibold">Drive 데이터 불러오기</button>
+        <button id="btnUseLocalData" class="flex-1 px-4 py-2.5 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-semibold">현재 기기 데이터 유지</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Modal: Custom Confirm -->
   <div id="confirmModal" class="hidden fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4">
     <div class="bg-white w-full max-w-sm rounded-2xl shadow-xl p-5 space-y-4 animate-fade-in">
@@ -561,9 +633,12 @@
     (function () {
       'use strict';
 
-      const APP_VERSION = 'v1.0.0';
+      const APP_VERSION = 'v1.1.0';
       const LEGACY_STORAGE_KEY = 'smart_car_logbook_v1';
       const STORAGE_KEY = 'smart_car_logbook_v2';
+      const GDRIVE_CLIENT_ID_KEY = 'smart_car_logbook_gdrive_client_id';
+      const GDRIVE_SYNC_FILENAME = 'smart_car_logbook_sync.json';
+      const GDRIVE_SCOPES = 'https://www.googleapis.com/auth/drive.appdata https://www.googleapis.com/auth/userinfo.email';
 
       const CAR_BRANDS = [
         { id: 'BMW', label: 'BMW' },
@@ -685,11 +760,310 @@
         state = getActiveAccount().data;
       }
 
-      function saveState() {
+      let gdriveState = {
+        clientId: loadClientId(),
+        accessToken: null,
+        userEmail: null,
+        driveFileId: null,
+        lastSyncAt: null,
+        syncing: false,
+        pendingRemotePayload: null
+      };
+      let syncDebounceTimer = null;
+
+      function loadClientId() {
+        try {
+          return localStorage.getItem(GDRIVE_CLIENT_ID_KEY) || '';
+        } catch (e) {
+          return '';
+        }
+      }
+
+      function saveClientId(val) {
+        gdriveState.clientId = val;
+        try {
+          localStorage.setItem(GDRIVE_CLIENT_ID_KEY, val);
+        } catch (e) {}
+      }
+
+      function saveState(skipCloudSync) {
+        rootState.updatedAt = new Date().toISOString();
         try {
           localStorage.setItem(STORAGE_KEY, JSON.stringify(rootState));
         } catch (e) {
           // Storage unavailable in restricted mode; keep in-memory
+        }
+        if (!skipCloudSync && gdriveState.accessToken) {
+          clearTimeout(syncDebounceTimer);
+          syncDebounceTimer = setTimeout(() => {
+            uploadToDrive(true);
+          }, 1200);
+        }
+      }
+
+      function updateSyncUI(statusText, isError) {
+        const badge = document.getElementById('driveSyncBadge');
+        const userBox = document.getElementById('driveUserBox');
+        const loginBox = document.getElementById('driveLoginBox');
+        const emailEl = document.getElementById('driveUserEmail');
+        const lastEl = document.getElementById('driveLastSyncText');
+        const hdrText = document.getElementById('headerSyncText');
+        const hdrIcon = document.getElementById('headerSyncIcon');
+
+        if (gdriveState.accessToken) {
+          if (userBox) userBox.classList.remove('hidden');
+          if (loginBox) loginBox.classList.add('hidden');
+          if (emailEl) emailEl.textContent = gdriveState.userEmail || 'Google 계정 연결됨';
+          if (lastEl) lastEl.textContent = statusText || (gdriveState.lastSyncAt ? `마지막 동기화: ${gdriveState.lastSyncAt}` : '동기화 완료');
+          if (badge) {
+            badge.textContent = gdriveState.syncing ? '동기화 중...' : '연결됨';
+            badge.className = 'text-[11px] font-semibold px-2.5 py-1 rounded-full ' +
+              (isError ? 'bg-rose-100 text-rose-700' : 'bg-emerald-100 text-emerald-700');
+          }
+          if (hdrText) hdrText.textContent = gdriveState.syncing ? '동기화 중' : 'Drive 연결됨';
+          if (hdrIcon) {
+            hdrIcon.setAttribute('data-lucide', gdriveState.syncing ? 'refresh-cw' : 'cloud');
+            hdrIcon.className = 'w-3.5 h-3.5 ' + (gdriveState.syncing ? 'text-sky-400 animate-spin' : 'text-emerald-400');
+          }
+        } else {
+          if (userBox) userBox.classList.add('hidden');
+          if (loginBox) loginBox.classList.remove('hidden');
+          if (badge) {
+            badge.textContent = '미연결';
+            badge.className = 'text-[11px] font-semibold px-2.5 py-1 rounded-full bg-slate-100 text-slate-600';
+          }
+          if (hdrText) hdrText.textContent = '동기화';
+          if (hdrIcon) {
+            hdrIcon.setAttribute('data-lucide', 'cloud-off');
+            hdrIcon.className = 'w-3.5 h-3.5 text-slate-400';
+          }
+        }
+        if (window.lucide) lucide.createIcons();
+      }
+
+      function loadGsiScript() {
+        return new Promise((resolve, reject) => {
+          if (window.google && window.google.accounts && window.google.accounts.oauth2) {
+            resolve();
+            return;
+          }
+          const script = document.createElement('script');
+          script.src = 'https://accounts.google.com/gsi/client';
+          script.async = true;
+          script.defer = true;
+          script.onload = () => resolve();
+          script.onerror = () => reject(new Error('Google 로그인 스크립트를 불러오지 못했습니다.'));
+          document.head.appendChild(script);
+        });
+      }
+
+      async function fetchGoogleUserEmail(token) {
+        try {
+          const res = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+            headers: { Authorization: 'Bearer ' + token }
+          });
+          if (res.ok) {
+            const info = await res.json();
+            return info.email || null;
+          }
+        } catch (e) {}
+        return null;
+      }
+
+      async function findDriveSyncFile(token) {
+        const q = encodeURIComponent(`name = '${GDRIVE_SYNC_FILENAME}' and trashed = false`);
+        const url = `https://www.googleapis.com/drive/v3/files?spaces=appDataFolder&q=${q}&fields=files(id,name,modifiedTime)`;
+        try {
+          const res = await fetch(url, {
+            headers: { Authorization: 'Bearer ' + token }
+          });
+          if (!res.ok) throw new Error('Drive 파일 조회 실패 (' + res.status + ')');
+          const data = await res.json();
+          return (data.files && data.files.length) ? data.files[0] : null;
+        } catch (err) {
+          throw err;
+        }
+      }
+
+      async function downloadDriveFile(token, fileId) {
+        const url = `https://www.googleapis.com/drive/v3/files/${encodeURIComponent(fileId)}?alt=media`;
+        try {
+          const res = await fetch(url, {
+            headers: { Authorization: 'Bearer ' + token }
+          });
+          if (!res.ok) throw new Error('Drive 파일 다운로드 실패');
+          return await res.json();
+        } catch (err) {
+          throw err;
+        }
+      }
+
+      async function uploadToDrive(silent) {
+        if (!gdriveState.accessToken) return;
+        gdriveState.syncing = true;
+        updateSyncUI('Google Drive에 저장 중...');
+        try {
+          const payload = JSON.stringify(rootState);
+          if (!gdriveState.driveFileId) {
+            const existing = await findDriveSyncFile(gdriveState.accessToken);
+            if (existing) gdriveState.driveFileId = existing.id;
+          }
+
+          if (gdriveState.driveFileId) {
+            const res = await fetch(
+              `https://www.googleapis.com/upload/drive/v3/files/${encodeURIComponent(gdriveState.driveFileId)}?uploadType=media`,
+              {
+                method: 'PATCH',
+                headers: {
+                  Authorization: 'Bearer ' + gdriveState.accessToken,
+                  'Content-Type': 'application/json'
+                },
+                body: payload
+              }
+            );
+            if (!res.ok) throw new Error('Drive 업데이트 실패 (' + res.status + ')');
+          } else {
+            const metadata = { name: GDRIVE_SYNC_FILENAME, parents: ['appDataFolder'] };
+            const boundary = '-------carlogbook314159';
+            const body =
+              `--${boundary}
+Content-Type: application/json; charset=UTF-8
+
+` +
+              JSON.stringify(metadata) +
+              `
+--${boundary}
+Content-Type: application/json
+
+` +
+              payload +
+              `
+--${boundary}--`;
+            const res = await fetch(
+              'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart',
+              {
+                method: 'POST',
+                headers: {
+                  Authorization: 'Bearer ' + gdriveState.accessToken,
+                  'Content-Type': `multipart/related; boundary="${boundary}"`
+                },
+                body
+              }
+            );
+            if (!res.ok) throw new Error('Drive 생성 실패 (' + res.status + ')');
+            const created = await res.json();
+            gdriveState.driveFileId = created.id;
+          }
+
+          const nowTime = new Date().toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+          gdriveState.lastSyncAt = nowTime;
+          gdriveState.syncing = false;
+          updateSyncUI(`마지막 동기화: ${nowTime}`);
+          if (!silent) showToast('Google Drive에 데이터를 저장했습니다.');
+        } catch (err) {
+          gdriveState.syncing = false;
+          updateSyncUI('동기화 오류: ' + err.message, true);
+          if (!silent) showToast('Google Drive 동기화에 실패했습니다.');
+        }
+      }
+
+      function countTotalRecords(rs) {
+        if (!rs || !Array.isArray(rs.accounts)) return 0;
+        return rs.accounts.reduce((sum, a) => {
+          const d = a.data || {};
+          return sum + (Array.isArray(d.fuelLogs) ? d.fuelLogs.length : 0) + (Array.isArray(d.maintLogs) ? d.maintLogs.length : 0);
+        }, 0);
+      }
+
+      function applyRemoteRootState(remote) {
+        if (!remote || !Array.isArray(remote.accounts) || !remote.accounts.length) return;
+        remote.accounts = remote.accounts.map(acc => ({
+          id: acc.id || uid(),
+          name: acc.name || '사용자',
+          color: acc.color || '#0ea5e9',
+          data: sanitizeAccountData(acc.data)
+        }));
+        if (!remote.accounts.some(a => a.id === remote.activeAccountId)) {
+          remote.activeAccountId = remote.accounts[0].id;
+        }
+        rootState = remote;
+        syncActiveStateRef();
+        saveState(true);
+        renderAll();
+      }
+
+      async function syncOnLogin() {
+        if (!gdriveState.accessToken) return;
+        gdriveState.syncing = true;
+        updateSyncUI('Drive 데이터 확인 중...');
+        try {
+          gdriveState.userEmail = await fetchGoogleUserEmail(gdriveState.accessToken);
+          const fileMeta = await findDriveSyncFile(gdriveState.accessToken);
+          if (!fileMeta) {
+            gdriveState.driveFileId = null;
+            await uploadToDrive(true);
+            showToast('Google Drive에 새 동기화 파일을 생성했습니다.');
+            return;
+          }
+          gdriveState.driveFileId = fileMeta.id;
+          const remoteData = await downloadDriveFile(gdriveState.accessToken, fileMeta.id);
+          const localCount = countTotalRecords(rootState);
+          const remoteCount = countTotalRecords(remoteData);
+
+          if (localCount === 0 && remoteCount > 0) {
+            applyRemoteRootState(remoteData);
+            const nowTime = new Date().toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+            gdriveState.lastSyncAt = nowTime;
+            gdriveState.syncing = false;
+            updateSyncUI(`마지막 동기화: ${nowTime}`);
+            showToast('Google Drive에서 기존 차계부 데이터를 불러왔습니다.');
+            return;
+          }
+
+          if (remoteCount > 0 && JSON.stringify(remoteData.accounts) !== JSON.stringify(rootState.accounts)) {
+            gdriveState.pendingRemotePayload = remoteData;
+            gdriveState.syncing = false;
+            updateSyncUI('동기화 선택 대기 중');
+            document.getElementById('syncConflictMsg').textContent =
+              `Google Drive에 저장된 데이터(기록 ${remoteCount}건)와 현재 기기의 데이터(기록 ${localCount}건)가 다릅니다. 어떤 데이터를 적용할까요?`;
+            document.getElementById('syncConflictModal').classList.remove('hidden');
+            return;
+          }
+
+          await uploadToDrive(true);
+          showToast('Google Drive 동기화가 완료되었습니다.');
+        } catch (err) {
+          gdriveState.syncing = false;
+          updateSyncUI('동기화 오류: ' + err.message, true);
+          showToast('Google Drive 연결 중 오류가 발생했습니다.');
+        }
+      }
+
+      async function startGoogleLogin() {
+        const cid = (document.getElementById('gdriveClientId').value || gdriveState.clientId || '').trim();
+        if (!cid) {
+          setActiveTab('backup');
+          showToast('먼저 Google OAuth 클라이언트 ID를 입력해 주세요.');
+          return;
+        }
+        saveClientId(cid);
+        try {
+          await loadGsiScript();
+          const tokenClient = window.google.accounts.oauth2.initTokenClient({
+            client_id: cid,
+            scope: GDRIVE_SCOPES,
+            callback: (resp) => {
+              if (resp && resp.access_token) {
+                gdriveState.accessToken = resp.access_token;
+                syncOnLogin();
+              } else {
+                showToast('Google 로그인 승인이 취소되었습니다.');
+              }
+            }
+          });
+          tokenClient.requestAccessToken({ prompt: 'consent' });
+        } catch (err) {
+          showToast(err.message || 'Google 로그인을 시작할 수 없습니다.');
         }
       }
 
@@ -2089,7 +2463,58 @@
         });
       });
 
+      // Google Drive Sync Handlers
+      document.getElementById('btnSyncHeader').addEventListener('click', () => {
+        if (gdriveState.accessToken) {
+          uploadToDrive(false);
+        } else {
+          setActiveTab('backup');
+        }
+      });
+
+      document.getElementById('btnSaveClientId').addEventListener('click', () => {
+        const val = document.getElementById('gdriveClientId').value.trim();
+        saveClientId(val);
+        showToast(val ? 'Google 클라이언트 ID를 저장했습니다.' : '클라이언트 ID가 비워졌습니다.');
+      });
+
+      document.getElementById('btnGoogleLogin').addEventListener('click', startGoogleLogin);
+      document.getElementById('btnGoogleSyncNow').addEventListener('click', () => uploadToDrive(false));
+      document.getElementById('btnGoogleLogout').addEventListener('click', () => {
+        if (gdriveState.accessToken && window.google && window.google.accounts && window.google.accounts.oauth2) {
+          try { window.google.accounts.oauth2.revoke(gdriveState.accessToken); } catch (e) {}
+        }
+        gdriveState.accessToken = null;
+        gdriveState.userEmail = null;
+        gdriveState.driveFileId = null;
+        gdriveState.lastSyncAt = null;
+        updateSyncUI();
+        showToast('Google 계정 연결을 해제했습니다.');
+      });
+
+      document.getElementById('btnUseDriveData').addEventListener('click', () => {
+        const remote = gdriveState.pendingRemotePayload;
+        gdriveState.pendingRemotePayload = null;
+        closeModal('syncConflictModal');
+        if (remote) {
+          applyRemoteRootState(remote);
+          const nowTime = new Date().toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+          gdriveState.lastSyncAt = nowTime;
+          updateSyncUI(`마지막 동기화: ${nowTime}`);
+          showToast('Google Drive 데이터로 업데이트했습니다.');
+        }
+      });
+
+      document.getElementById('btnUseLocalData').addEventListener('click', () => {
+        gdriveState.pendingRemotePayload = null;
+        closeModal('syncConflictModal');
+        uploadToDrive(false);
+      });
+
       // Initialize
+      const cidInput = document.getElementById('gdriveClientId');
+      if (cidInput && gdriveState.clientId) cidInput.value = gdriveState.clientId;
+      updateSyncUI();
       const verBadge = document.getElementById('btnVersionBadge');
       const verText = document.getElementById('appVersionText');
       if (verBadge) verBadge.textContent = APP_VERSION;

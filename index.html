@@ -9,7 +9,7 @@
   <meta name="apple-mobile-web-app-title" content="내 차계부" />
   <title>스마트 차계부(Smart Car Care)</title>
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%230f172a'/%3E%3Cpath d='M16 38l4-12c1-3 3-4 6-4h12c3 0 5 1 6 4l4 12v10a2 2 0 0 1-2 2h-2a2 2 0 0 1-2-2v-2H22v2a2 2 0 0 1-2 2h-2a2 2 0 0 1-2-2V38zm6-10l-2 6h24l-2-6c-.4-1.2-1.2-2-2.5-2h-15c-1.3 0-2.1.8-2.5 2zm-.5 13a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5zm21 0a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5z' fill='%2338bdf8'/%3E%3C/svg%3E" />
-  <link rel="manifest" id="appManifest" href="" />
+  <link rel="manifest" href="./manifest.json" />
   <script src="https://cdn.tailwindcss.com/3.4.17"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
   <script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js"></script>
@@ -2737,7 +2737,11 @@
         uploadToDrive(false);
       });
 
-      // Dynamic PWA Manifest using exact current URL (fixes GitHub Pages subpath launch)
+      // Register Service Worker for full Chrome PWA install
+      if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
+        navigator.serviceWorker.register('./sw.js').catch(() => {});
+      }
+      // Dynamic PWA Manifest fallback (skipped when ./manifest.json is used)
       (function setupDynamicManifest() {
         try {
           if (location.protocol !== 'https:' && location.protocol !== 'http:') return;

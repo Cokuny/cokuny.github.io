@@ -1,4 +1,4 @@
-const CACHE_NAME = 'smart-car-care-v1.7.4';
+const CACHE_NAME = 'smart-car-care-v1.7.5';
 self.addEventListener('install', (event) => {
   self.skipWaiting();
 });

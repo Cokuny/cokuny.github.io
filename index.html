@@ -9,7 +9,7 @@
   <meta name="apple-mobile-web-app-title" content="내 차계부" />
   <title>스마트 차계부(Smart Car Care)</title>
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%230f172a'/%3E%3Cpath d='M16 38l4-12c1-3 3-4 6-4h12c3 0 5 1 6 4l4 12v10a2 2 0 0 1-2 2h-2a2 2 0 0 1-2-2v-2H22v2a2 2 0 0 1-2 2h-2a2 2 0 0 1-2-2V38zm6-10l-2 6h24l-2-6c-.4-1.2-1.2-2-2.5-2h-15c-1.3 0-2.1.8-2.5 2zm-.5 13a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5zm21 0a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5z' fill='%2338bdf8'/%3E%3C/svg%3E" />
-  <link rel="manifest" href="./manifest.json" />
+  <link rel="manifest" id="appManifest" href="" />
   <script src="https://cdn.tailwindcss.com/3.4.17"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
   <script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js"></script>
@@ -358,6 +358,7 @@
             <span class="text-slate-400">릴리스 2026.11.22</span>
           </div>
           <ul class="list-disc list-inside space-y-1 text-slate-500 pt-1">
+            <li>Google 로그인 직후 Drive 저장 경로 설정 팝업 추가 (v1.7.5)</li>
             <li>웹앱 제목을 스마트 차계부(Smart Car Care)로 변경 (v1.6.2)</li>
             <li>재로그인 및 다른 기기 로그인 시 권한 동의 창 생략 개선 (v1.6.1)</li>
             <li>로컬 사용자 계정 제거 및 상단 Google 로그인 통합 (v1.7.0)</li>
@@ -561,6 +562,37 @@
     </div>
   </div>
 
+  <!-- Modal: Drive Folder Setup (before auto-sync) -->
+  <div id="driveFolderSetupModal" class="hidden fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4">
+    <div class="bg-white w-full sm:max-w-md rounded-t-2xl sm:rounded-2xl shadow-xl overflow-hidden animate-fade-in">
+      <div class="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <div class="w-8 h-8 rounded-lg bg-sky-100 text-sky-600 flex items-center justify-center shrink-0">
+            <i data-lucide="folder-sync" class="w-4 h-4"></i>
+          </div>
+          <div>
+            <h3 class="text-base font-bold text-slate-900" id="driveFolderModalTitle">Google Drive 저장 경로 설정</h3>
+            <p class="text-[11px] text-slate-500" id="driveFolderModalEmail"></p>
+          </div>
+        </div>
+        <button id="btnCloseFolderSetup" class="text-slate-400 hover:text-slate-700 p-1"><i data-lucide="x" class="w-5 h-5"></i></button>
+      </div>
+      <form id="driveFolderSetupForm" class="p-5 space-y-4">
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 mb-1.5" id="driveFolderModalLabel">내 드라이브 저장 폴더 경로</label>
+          <input type="text" id="modalDriveFolderInput" placeholder="예: 스마트차계부 또는 백업/차계부 (비우면 최상위)" class="w-full border border-slate-300 rounded-xl px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-sky-500" />
+          <p class="text-[11px] text-slate-500 mt-1.5 leading-relaxed" id="driveFolderModalDesc">
+            설정한 폴더에서 기존 백업 파일(<code>smart_car_logbook_sync.json</code>)을 찾아 동기화하거나 새로 저장합니다.
+          </p>
+        </div>
+        <div class="flex gap-2 pt-1">
+          <button type="button" id="btnCancelFolderSetup" class="flex-1 py-2.5 rounded-xl border border-slate-200 text-slate-600 font-semibold text-sm hover:bg-slate-50">취소</button>
+          <button type="submit" id="btnConfirmFolderSetup" class="flex-1 py-2.5 rounded-xl bg-sky-600 hover:bg-sky-700 text-white font-semibold text-sm shadow-sm">경로 확정 · 동기화</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <!-- Modal: Sync Conflict -->
   <div id="syncConflictModal" class="hidden fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4">
     <div class="bg-white w-full max-w-md rounded-2xl shadow-xl p-5 space-y-4 animate-fade-in">
@@ -609,7 +641,7 @@
     (function () {
       'use strict';
 
-      const APP_VERSION = 'v1.7.4';
+      const APP_VERSION = 'v1.7.5';
       const DEFAULT_GDRIVE_CLIENT_ID = '126554316010-1v3tt4ff6pjchimdlfschr7rs6or48tg.apps.googleusercontent.com';
       const LANG_STORAGE_KEY = 'smart_car_logbook_lang';
       let currentLang = loadLang();
@@ -1289,7 +1321,7 @@
                 if (silentRefresh) {
                   updateSyncUI();
                 } else {
-                  syncOnLogin();
+                  openDriveFolderSetupModal();
                 }
               } else if (!silentRefresh) {
                 showToast('Google 로그인 승인이 취소되었습니다.');
@@ -2602,6 +2634,56 @@
         updateSyncUI();
       });
 
+      async function openDriveFolderSetupModal() {
+        gdriveState.syncing = false;
+        updateSyncUI(currentLang === 'en' ? 'Confirm folder path' : '저장 경로 확인 중');
+        const email = await fetchGoogleUserEmail(gdriveState.accessToken);
+        if (email) {
+          gdriveState.userEmail = email;
+          saveDriveSession();
+        }
+        const titleEl = document.getElementById('driveFolderModalTitle');
+        const emailEl = document.getElementById('driveFolderModalEmail');
+        const labelEl = document.getElementById('driveFolderModalLabel');
+        const descEl = document.getElementById('driveFolderModalDesc');
+        const cancelBtn = document.getElementById('btnCancelFolderSetup');
+        const confirmBtn = document.getElementById('btnConfirmFolderSetup');
+        const inputEl = document.getElementById('modalDriveFolderInput');
+
+        if (titleEl) titleEl.textContent = currentLang === 'en' ? 'Google Drive Folder Path' : 'Google Drive 저장 경로 설정';
+        if (emailEl) emailEl.textContent = gdriveState.userEmail || (currentLang === 'en' ? 'Google Account Connected' : 'Google 계정 연결됨');
+        if (labelEl) labelEl.textContent = currentLang === 'en' ? 'Folder path in My Drive' : '내 드라이브 저장 폴더 경로';
+        if (descEl) {
+          descEl.innerHTML = currentLang === 'en'
+            ? 'Syncs <code>smart_car_logbook_sync.json</code> in this folder (leave blank for My Drive root).'
+            : '설정한 폴더에서 기존 백업 파일(<code>smart_car_logbook_sync.json</code>)을 찾아 동기화하거나 새로 저장합니다.';
+        }
+        if (cancelBtn) cancelBtn.textContent = currentLang === 'en' ? 'Cancel' : '취소';
+        if (confirmBtn) confirmBtn.textContent = currentLang === 'en' ? 'Confirm & Sync' : '경로 확정 · 동기화';
+        if (inputEl) inputEl.value = gdriveState.folderPath;
+
+        document.getElementById('driveFolderSetupModal').classList.remove('hidden');
+        if (window.lucide) lucide.createIcons();
+      }
+
+      document.getElementById('driveFolderSetupForm').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const val = document.getElementById('modalDriveFolderInput').value;
+        saveFolderPath(val);
+        const backupFolderInput = document.getElementById('gdriveFolderPath');
+        if (backupFolderInput) backupFolderInput.value = gdriveState.folderPath;
+        saveDriveSession();
+        closeModal('driveFolderSetupModal');
+        syncOnLogin();
+      });
+
+      ['btnCloseFolderSetup', 'btnCancelFolderSetup'].forEach(id => {
+        document.getElementById(id).addEventListener('click', () => {
+          closeModal('driveFolderSetupModal');
+          updateSyncUI(currentLang === 'en' ? 'Sync paused (folder not confirmed)' : '경로 설정 취소됨 (수동 동기화 가능)');
+        });
+      });
+
       // Google Drive Sync Handlers
       document.getElementById('btnSyncHeader').addEventListener('click', () => {
         if (gdriveState.accessToken) {
@@ -2655,11 +2737,7 @@
         uploadToDrive(false);
       });
 
-      // Register Service Worker for full Chrome PWA install
-      if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
-        navigator.serviceWorker.register('./sw.js').catch(() => {});
-      }
-      // Dynamic PWA Manifest fallback (skipped when ./manifest.json is used)
+      // Dynamic PWA Manifest using exact current URL (fixes GitHub Pages subpath launch)
       (function setupDynamicManifest() {
         try {
           if (location.protocol !== 'https:' && location.protocol !== 'http:') return;
